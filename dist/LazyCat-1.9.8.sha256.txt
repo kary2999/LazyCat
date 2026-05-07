@@ -1,3 +1,0 @@
-bdfc9c24ddacec4f916ff18ef8c20cbf80567f5aae0b90fd7f7cd968195d01f9  LazyCat-1.9.8.zip
-68e6db6ed8514f504b13b3f4ea0e957bc1ecf83eabea9dba0d043201ca9a3b1d  LazyCat-1.9.8.tar.gz
-9fe4f18729b856ea3f3d142c6fc89aa059e9c74e836fbdb96095c9f27f13ca02  LazyCat-1.9.8.dmg

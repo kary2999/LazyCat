@@ -1,0 +1,16 @@
+# Build artifacts
+build/
+dist/
+
+# macOS
+.DS_Store
+*.DS_Store
+
+# Swift/Xcode
+*.o
+*.d
+*.swp
+DerivedData/
+
+# Logs
+/tmp/mytodo*.log
