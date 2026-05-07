@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · 四栏 + Telegram 通知箱原型</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-page: #fff7ec;
+  --bg-card: #ffffff;
+  --bg-surface: #fff3e0;
+  --bg-soft: #ffefdc;
+  --tx-1: #2c2418;
+  --tx-2: #6b5f48;
+  --tx-3: #a08f6f;
+  --tx-4: #c1ad8a;
+  --accent: #FF8C42;
+  --tg: #229ED9;       /* Telegram 蓝 */
+  --tg-light: #E5F4FB;
+  --red: #c0392b;
+  --green: #2e7d32;
+  --border-1: #f5dfb5;
+}
+body {
+  font-family: -apple-system, "PingFang SC", sans-serif;
+  background: #ebecef; color: var(--tx-1); padding: 28px;
+}
+.intro { max-width: 1700px; margin: 0 auto 24px; background: white; border-radius: 14px; padding: 20px 26px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+.intro h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.intro p { color: var(--tx-2); font-size: 13.5px; line-height: 1.7; }
+.intro .warn { background: #fff3e0; border-left: 4px solid var(--accent); padding: 10px 14px; margin-top: 10px; border-radius: 6px; font-size: 13px; line-height: 1.7; color: var(--tx-1); }
+.intro .warn b { color: #d35400; }
+
+.window {
+  max-width: 1700px; margin: 0 auto;
+  border-radius: 14px; overflow: hidden;
+  background: white;
+  box-shadow: 0 24px 60px rgba(0,0,0,.12);
+}
+.titlebar {
+  height: 32px; background: rgba(255,255,255,.7);
+  display: flex; align-items: center; gap: 8px; padding: 0 14px;
+  border-bottom: 0.5px solid rgba(0,0,0,.1);
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; }
+.dot.y { background: #ffbd2e; }
+.dot.g { background: #28c840; }
+.title-text { flex: 1; text-align: center; font-size: 12px; color: var(--tx-2); font-weight: 600; }
+
+.body4 {
+  display: grid;
+  grid-template-columns: 220px 320px 1fr 300px;   /* 4 栏 */
+  height: 800px;
+}
+
+.col {
+  border-right: 0.5px solid rgba(0,0,0,.1);
+}
+.col:last-child { border-right: 0; }
+
+/* === 1. Sidebar (vibrancy) === */
+.col-sidebar {
+  background: rgba(245, 240, 230, .7);
+  padding: 8px 0;
+  display: flex; flex-direction: column;
+}
+.col-sidebar .search {
+  margin: 4px 12px 8px;
+  background: rgba(0,0,0,.05); padding: 4px 10px;
+  border-radius: 6px; font-size: 11px; color: var(--tx-3);
+}
+.col-sidebar .grow { flex: 1; }
+.col-sidebar .header {
+  font-size: 10px; font-weight: 800; color: var(--tx-3);
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 14px 14px 4px;
+}
+.col-sidebar .item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 14px; height: 26px;
+  font-size: 12.5px; font-weight: 500; color: var(--tx-1);
+}
+.col-sidebar .item.active { background: rgba(0,0,0,.07); margin: 0 6px; border-radius: 5px; padding-left: 8px; padding-right: 8px; height: 26px; }
+.col-sidebar .item .ico { width: 18px; text-align: center; }
+.col-sidebar .item .count { margin-left: auto; font-size: 11px; color: var(--tx-3); }
+.col-sidebar .footer { padding: 6px 14px; font-size: 11px; color: var(--tx-3); border-top: 0.5px solid rgba(0,0,0,.06); }
+
+/* === 2. Mid list === */
+.col-mid {
+  background: rgba(247, 240, 222, .55);
+  display: flex; flex-direction: column;
+}
+.col-mid .head {
+  height: 50px; padding: 0 18px;
+  display: flex; align-items: end; gap: 8px; padding-bottom: 8px;
+  border-bottom: 0.5px solid rgba(0,0,0,.06);
+}
+.col-mid .head h2 { font-size: 17px; font-weight: 600; color: var(--tx-1); }
+.col-mid .head .cnt { font-size: 12px; color: var(--tx-3); font-weight: 600; }
+.col-mid .head .add { margin-left: auto; width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.col-mid .row {
+  padding: 10px 14px;
+  border-bottom: 0.5px solid rgba(0,0,0,.04);
+  display: flex; gap: 9px; align-items: flex-start;
+}
+.col-mid .row.active { background: var(--accent); }
+.col-mid .row.active .title, .col-mid .row.active .meta { color: white; }
+.col-mid .row .check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #d4ba8a; margin-top: 4px; }
+.col-mid .row .pri { width: 3px; align-self: stretch; border-radius: 1.5px; background: var(--accent); margin: 4px 0; }
+.col-mid .row .pri.t0 { background: var(--red); }
+.col-mid .row .pri.t2 { background: var(--green); }
+.col-mid .row .body { flex: 1; min-width: 0; }
+.col-mid .row .title { font-size: 13px; color: var(--tx-1); font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-mid .row .meta { font-size: 11px; color: var(--tx-3); margin-top: 3px; font-weight: 500; }
+
+/* === 3. Detail === */
+.col-detail {
+  background: white;
+  padding: 22px 26px;
+  overflow-y: auto;
+}
+.col-detail h1 { font-size: 18px; font-weight: 600; color: var(--tx-1); margin-bottom: 8px; }
+.col-detail .meta { font-size: 11.5px; color: var(--tx-3); font-weight: 500; }
+.col-detail .chips { display: flex; gap: 6px; margin: 10px 0 14px; }
+.col-detail .chip { padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: white; }
+.col-detail .chip.pri-t1 { background: var(--accent); }
+.col-detail .chip.status { background: var(--accent); }
+.col-detail .chip.time { background: var(--accent); }
+.col-detail .body { font-size: 13px; line-height: 1.65; color: var(--tx-1); margin-bottom: 14px; }
+
+/* === 4. ★ TG Inbox 通知箱 === */
+.col-tg {
+  background: linear-gradient(180deg, #f9fcff, #f3f8fc);
+  display: flex; flex-direction: column;
+}
+.col-tg .head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px 8px;
+  border-bottom: 0.5px solid rgba(0,0,0,.06);
+}
+.col-tg .head .ico {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--tg); color: white;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+}
+.col-tg .head h2 { font-size: 14px; font-weight: 600; color: var(--tx-1); }
+.col-tg .head .cnt { background: var(--tg); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.col-tg .head .grow { flex: 1; }
+.col-tg .head .clear-all { font-size: 10.5px; color: var(--tg); cursor: pointer; font-weight: 700; }
+
+.col-tg .list { flex: 1; overflow-y: auto; padding: 6px 0; }
+
+.col-tg .item {
+  margin: 4px 10px; padding: 10px 12px;
+  background: white; border: 0.5px solid rgba(0,0,0,.06);
+  border-radius: 8px;
+  position: relative;
+  transition: opacity .15s;
+}
+.col-tg .item.unread { border-left: 3px solid var(--tg); }
+.col-tg .item .top {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 4px;
+}
+.col-tg .item .av {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, #5DADE2, #2874A6);
+  color: white; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.col-tg .item .av.alt { background: linear-gradient(135deg, #76D7C4, #16A085); }
+.col-tg .item .av.alt2 { background: linear-gradient(135deg, #F1948A, #C0392B); }
+.col-tg .item .av.alt3 { background: linear-gradient(135deg, #BB8FCE, #6C3483); }
+.col-tg .item .who { font-size: 12.5px; font-weight: 600; color: var(--tx-1); }
+.col-tg .item .source-pill {
+  font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 3px;
+  background: var(--tg-light); color: var(--tg);
+}
+.col-tg .item .source-pill.dm { background: var(--tg); color: white; }
+.col-tg .item .grow { flex: 1; }
+.col-tg .item .time { font-size: 10px; color: var(--tx-3); font-weight: 600; }
+.col-tg .item .x {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(0,0,0,.05); color: var(--tx-3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  margin-left: 4px;
+}
+.col-tg .item .x:hover { background: var(--tx-3); color: white; }
+.col-tg .item .text {
+  font-size: 12px; color: var(--tx-1); line-height: 1.5;
+  margin-top: 4px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.col-tg .item .actions {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.col-tg .item .actions .btn {
+  font-size: 10.5px; padding: 3px 9px; border-radius: 4px;
+  background: var(--bg-surface); color: var(--tx-2); font-weight: 700; cursor: pointer;
+}
+.col-tg .item .actions .btn.primary {
+  background: var(--accent); color: white;
+}
+
+.col-tg .empty {
+  text-align: center; padding: 50px 20px;
+  font-size: 12.5px; color: var(--tx-3); font-weight: 500;
+}
+
+.col-tg .foot {
+  padding: 8px 16px;
+  border-top: 0.5px solid rgba(0,0,0,.06);
+  font-size: 10.5px; color: var(--tx-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.col-tg .foot .dot-status { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.col-tg .foot .grow { flex: 1; }
+.col-tg .foot .gear { color: var(--tg); cursor: pointer; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>四栏：现有 3 栏 + Telegram 通知箱（最右）</h1>
+  <p>现有的 sidebar / mid / detail 三栏不动，<b>右边再加一列 300pt 宽的 TG 通知箱</b>。新消息来 → 出现在最上面 → 用户点完释放（"已处理"按钮 / ✕ 关闭 / 转任务）。</p>
+  <div class="warn">
+    <b>技术现实必须先说清</b>：<br>
+    <b>① Bot API 路径（已实现 v1.7.42）</b>：你必须在 @BotFather 创建 bot，把 bot 加到群里。bot 只能看到「@bot 提及」和「直接发给 bot 的消息」。<b>看不到陌生人发给你（用户）的私聊</b>。<br>
+    <b>② TDLib 路径（监听本地账号）</b>：要用 TDLib 接入你自己的 TG 账号，能看到所有 DM + @ 提及。但 TDLib 是 C++ 库，集成成本 1-2 天，二次审核也复杂。<br>
+    <b>建议</b>：先把 bot 路径跑通（群里 @bot 自动建任务），证明 UI 流程对了，再考虑要不要上 TDLib。
+  </div>
+</div>
+
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="title-text">LazyCat</span>
+  </div>
+  <div class="body4">
+
+    <!-- col 1: Sidebar -->
+    <div class="col col-sidebar">
+      <div class="search">🔍 搜索 任务 / @人</div>
+      <div class="grow">
+        <div class="header">视图</div>
+        <div class="item active"><span class="ico">⏰</span>今天<span class="count">9</span></div>
+        <div class="item"><span class="ico">📅</span>本周<span class="count">14</span></div>
+        <div class="item"><span class="ico">📥</span>全部<span class="count">23</span></div>
+        <div class="item"><span class="ico">✓</span>已完成<span class="count">52</span></div>
+
+        <div class="header">人</div>
+        <div class="item"><span class="ico">L</span>len<span class="count">5</span></div>
+        <div class="item"><span class="ico">M</span>Max<span class="count">2</span></div>
+        <div class="item"><span class="ico">D</span>Devin<span class="count">1</span></div>
+
+        <div class="header">优先级</div>
+        <div class="item"><span class="ico" style="color: #c0392b">●</span>T0 紧急<span class="count">3</span></div>
+        <div class="item"><span class="ico" style="color: #FF8C42">●</span>T1 重要<span class="count">6</span></div>
+        <div class="item"><span class="ico" style="color: #2e7d32">●</span>T2 一般<span class="count">14</span></div>
+      </div>
+      <div class="footer">🔥 5,690 键 · 50% · 4 天</div>
+    </div>
+
+    <!-- col 2: Mid list -->
+    <div class="col col-mid">
+      <div class="head">
+        <h2>今天</h2>
+        <span class="cnt">9 个任务</span>
+        <span class="add">＋</span>
+      </div>
+      <div class="row active">
+        <div class="check"></div>
+        <div class="pri t0"></div>
+        <div class="body">
+          <div class="title">技术方案 · 撮合域 仓位/委托</div>
+          <div class="meta">@len · 今天 12:22</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="check"></div>
+        <div class="pri"></div>
+        <div class="body">
+          <div class="title">88 静态资源 支持 8Max</div>
+          <div class="meta">@运营 · 今天 12:22</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="check"></div>
+        <div class="pri t2"></div>
+        <div class="body">
+          <div class="title">app_service 中 用户 IP 用 ipinfo.io</div>
+          <div class="meta">@Max · 今天 12:22</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="check"></div>
+        <div class="pri"></div>
+        <div class="body">
+          <div class="title">空投业务 缺少 extra 字段</div>
+          <div class="meta">@查尔斯 · 今天 12:22 · ✍️</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="check"></div>
+        <div class="pri t2"></div>
+        <div class="body">
+          <div class="title">股票 延期了</div>
+          <div class="meta">@len · 今天 12:22</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- col 3: Detail -->
+    <div class="col col-detail">
+      <h1>技术方案 1. 撮合域 仓位/委托结构设计</h1>
+      <div class="meta">👤 @len · 创建 今天 12:22</div>
+      <div class="chips">
+        <span class="chip pri-t1">T1 重要</span>
+        <span class="chip status">⚡ 进行中</span>
+      </div>
+      <div class="body">
+1. 撮合域 的 仓位/委托结构设计<br>
+2. 资产 资产中台 GRPC 的 分布式事务方案 saga<br>
+3. 行情域的 topic 设计，用户相关的推送 设计<br>
+4. 做市域的设计 ()
+      </div>
+      <div style="font-size: 10.5px; color: var(--tx-3); font-weight: 700; letter-spacing: .5px; margin-bottom: 8px;">属性</div>
+      <div style="font-size: 12px; color: var(--tx-1); line-height: 1.8;">
+        <div><span style="color: var(--tx-3); display: inline-block; width: 60px;">人员</span><b>@len</b></div>
+        <div><span style="color: var(--tx-3); display: inline-block; width: 60px;">优先级</span><b style="color: var(--accent)">T1 重要</b></div>
+        <div><span style="color: var(--tx-3); display: inline-block; width: 60px;">提醒</span>未设置</div>
+        <div><span style="color: var(--tx-3); display: inline-block; width: 60px;">状态</span>进行中</div>
+        <div><span style="color: var(--tx-3); display: inline-block; width: 60px;">创建于</span>今天 12:22</div>
+      </div>
+    </div>
+
+    <!-- ★ col 4: TG 通知箱 -->
+    <div class="col col-tg">
+      <div class="head">
+        <div class="ico">✈</div>
+        <h2>TG 提示</h2>
+        <span class="cnt">4</span>
+        <span class="grow"></span>
+        <span class="clear-all">全部已读</span>
+      </div>
+
+      <div class="list">
+
+        <!-- 一条 私聊 → 红边强调 -->
+        <div class="item unread">
+          <div class="top">
+            <div class="av alt2">小</div>
+            <div class="who">小张</div>
+            <div class="source-pill dm">私聊</div>
+            <div class="grow"></div>
+            <div class="time">2 分前</div>
+            <div class="x">×</div>
+          </div>
+          <div class="text">老板说要紧急修一下 KYC 那个等级名称 bug，今天下班前能搞完吗？</div>
+          <div class="actions">
+            <span class="btn primary">＋ 转任务</span>
+            <span class="btn">已处理</span>
+          </div>
+        </div>
+
+        <!-- 一条 群 @ -->
+        <div class="item unread">
+          <div class="top">
+            <div class="av">设</div>
+            <div class="who">设计同学</div>
+            <div class="source-pill">设计组 @</div>
+            <div class="grow"></div>
+            <div class="time">15 分前</div>
+            <div class="x">×</div>
+          </div>
+          <div class="text">@你 锁屏方案 v2 那个 sketch 已经传共享盘了，路径 /design/lock-v2.sketch</div>
+          <div class="actions">
+            <span class="btn primary">＋ 转任务</span>
+            <span class="btn">已处理</span>
+          </div>
+        </div>
+
+        <!-- 一条 群 @ 已读 -->
+        <div class="item">
+          <div class="top">
+            <div class="av alt">运</div>
+            <div class="who">运营群 - 王磊</div>
+            <div class="source-pill">运营群 @</div>
+            <div class="grow"></div>
+            <div class="time">1 小时前</div>
+            <div class="x">×</div>
+          </div>
+          <div class="text">@你 8Max 静态资源那个进度怎么样了，明天上线还来得及吗？</div>
+        </div>
+
+        <!-- 一条 私聊 已读 -->
+        <div class="item">
+          <div class="top">
+            <div class="av alt3">查</div>
+            <div class="who">查尔斯</div>
+            <div class="source-pill dm">私聊</div>
+            <div class="grow"></div>
+            <div class="time">2 小时前</div>
+            <div class="x">×</div>
+          </div>
+          <div class="text">空投业务那个 extra 字段，建议用 JSON 类型，灵活点</div>
+        </div>
+
+      </div>
+
+      <div class="foot">
+        <span class="dot-status"></span>
+        <span>同步中 · 30 秒前</span>
+        <span class="grow"></span>
+        <span class="gear">⚙ 设置</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="intro" style="margin-top: 24px">
+  <h1 style="font-size: 16px;">交互行为</h1>
+  <p>① <b>新消息</b> 来到 → 顶部插入新 item，左边有蓝色 unread 边</p>
+  <p>② <b>「＋ 转任务」</b> → 弹出 markdown 编辑器，预填 sender 为 person、文字为 text</p>
+  <p>③ <b>「已处理」/ ✕</b> → 从列表移除（释放）</p>
+  <p>④ <b>双击整条</b> → 也算"转任务"</p>
+  <p>⑤ <b>「全部已读」</b> → 移除所有 unread 标记，但保留列表</p>
+  <p>⑥ <b>底部 ⚙ 设置</b> → 打开 Telegram 配置 sheet（已经做好的 token 填写界面）</p>
+  <p>⑦ <b>排序</b>：默认 <b>新→旧</b>（最新在最上面）。如果你想"正序" = 老→新，告诉我换一下</p>
+  <p style="margin-top: 10px;color: #d35400; font-weight: 700;">这个 UI OK 我就开始实现：第 4 栏 + Telegram 通知箱 view + 把现有 TelegramSync 接进来。bot API 先跑，TDLib 后面再上。</p>
+</div>
+
+</body>
+</html>

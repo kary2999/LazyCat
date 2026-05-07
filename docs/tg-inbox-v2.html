@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · TG 通知箱 v2 · UI 稿</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-page: #ebecef;
+  --bg-card: #ffffff;
+  --bg-surface: #fff7ec;
+  --bg-soft: #fff3e0;
+  --bg-tg: linear-gradient(180deg, #f5fafd 0%, #eef5fa 100%);
+  --tx-1: #1f1810;
+  --tx-2: #5a4f3d;
+  --tx-3: #93836a;
+  --tx-4: #c1ad8a;
+  --accent: #FF8C42;
+  --accent-soft: #ffe7d3;
+  --tg: #229ED9;
+  --tg-dark: #1A7CB0;
+  --tg-soft: #d6ebf7;
+  --tg-vsoft: #eaf4fb;
+  --red: #c0392b;
+  --red-soft: #fde0dc;
+  --green: #2e7d32;
+  --border: #ecdcb8;
+}
+body {
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--bg-page);
+  color: var(--tx-1);
+  padding: 28px;
+}
+
+.intro {
+  max-width: 1700px; margin: 0 auto 20px;
+  background: white; border-radius: 14px; padding: 18px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.intro h1 { font-size: 19px; font-weight: 700; margin-bottom: 6px; }
+.intro p { font-size: 13px; color: var(--tx-2); line-height: 1.7; }
+.intro ul { margin: 8px 0 0 18px; }
+.intro li { font-size: 12.5px; color: var(--tx-2); line-height: 1.8; }
+.intro li b { color: var(--tx-1); }
+
+/* ─── 整窗 ─── */
+.window {
+  max-width: 1700px; margin: 0 auto;
+  border-radius: 14px; overflow: hidden;
+  background: white;
+  box-shadow: 0 24px 60px rgba(0,0,0,.12);
+}
+.titlebar {
+  height: 32px; background: rgba(255,255,255,.7);
+  display: flex; align-items: center; gap: 8px; padding: 0 14px;
+  border-bottom: 0.5px solid rgba(0,0,0,.1);
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; } .dot.y { background: #ffbd2e; } .dot.g { background: #28c840; }
+.title-text { flex: 1; text-align: center; font-size: 12px; color: var(--tx-2); font-weight: 600; }
+
+.body4 {
+  display: grid;
+  grid-template-columns: 220px 320px 1fr 320px;
+  height: 880px;
+}
+.col { border-right: 0.5px solid rgba(0,0,0,.08); display: flex; flex-direction: column; }
+.col:last-child { border-right: 0; }
+
+/* ─── 占位前 3 列(略 摘要) ─── */
+.col-sb     { background: rgba(245, 240, 230, .7); padding: 12px; font-size: 11px; color: var(--tx-3); }
+.col-mid    { background: rgba(247, 240, 222, .55); padding: 12px; font-size: 11px; color: var(--tx-3); }
+.col-detail { background: white; padding: 22px 26px; }
+.col-detail h2 { font-size: 17px; font-weight: 600; }
+.col-detail .sub { font-size: 11.5px; color: var(--tx-3); margin-top: 4px; }
+.col-detail .body { font-size: 13px; line-height: 1.65; color: var(--tx-1); margin-top: 14px; }
+.col-detail h3 { font-size: 11px; font-weight: 700; color: var(--tx-3); letter-spacing: .5px; text-transform: uppercase; margin-top: 18px; }
+
+/* 详情里的"消息分组" —— 同人私聊追加场景 */
+.thread { margin-top: 12px; border-left: 2px solid var(--tg-soft); padding-left: 14px; }
+.thread .msg {
+  background: var(--tg-vsoft); border-radius: 8px; padding: 10px 12px;
+  margin-bottom: 8px; font-size: 12.5px; color: var(--tx-1); line-height: 1.55;
+}
+.thread .msg .head {
+  display: flex; gap: 6px; align-items: center; margin-bottom: 4px;
+  font-size: 10.5px; color: var(--tg-dark); font-weight: 700;
+}
+.thread .msg .head .pill {
+  background: var(--tg); color: white; padding: 1px 6px; border-radius: 3px;
+  font-size: 9.5px; letter-spacing: .3px;
+}
+.thread .msg .head .when { color: var(--tx-3); font-weight: 500; margin-left: auto; }
+
+/* ──────────────────── ★ TG 通知箱 v2 ──────────────────── */
+.col-tg {
+  background: var(--bg-tg);
+  display: flex; flex-direction: column;
+  position: relative;
+}
+
+/* 顶 Header */
+.tg-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px 8px;
+}
+.tg-head .ic {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--tg); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.tg-head h2 {
+  font-size: 14.5px; font-weight: 700; color: var(--tx-1);
+  letter-spacing: .3px;
+}
+.tg-head .cnt {
+  background: var(--tg); color: white;
+  font-size: 10.5px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px;
+  min-width: 22px; text-align: center;
+}
+.tg-head .grow { flex: 1; }
+.tg-head .clear-all {
+  font-size: 11px; font-weight: 600; color: var(--tg);
+  cursor: pointer;
+}
+.tg-head .select-mode {
+  font-size: 11px; font-weight: 600; color: var(--tx-2);
+  cursor: pointer; padding: 3px 8px;
+  border-radius: 5px; background: rgba(0,0,0,.04);
+}
+.tg-head .select-mode.active { background: var(--tg); color: white; }
+.tg-head .select-mode:hover { background: rgba(0,0,0,.08); }
+.tg-head .select-mode.active:hover { background: var(--tg-dark); }
+
+/* ─── ★ 批量模式:卡片左侧 checkbox ─── */
+.tg-card .check {
+  width: 20px; height: 20px; border-radius: 5px;
+  border: 1.5px solid var(--tx-4); background: white;
+  flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 6px;
+  transition: all .15s;
+}
+.tg-card .check.on {
+  background: var(--tg); border-color: var(--tg);
+  color: white; font-size: 13px; font-weight: 700;
+}
+.tg-card.selected {
+  background: var(--tg-vsoft);
+  border-color: var(--tg);
+}
+
+/* ─── ★ 批量操作工具栏 · 暖橘风,贴 macOS 原生 ─── */
+.tg-batch-bar {
+  background: rgba(255, 247, 235, 0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 0.5px solid var(--border);
+  padding: 7px 10px;
+  display: flex; align-items: center; gap: 2px;
+  font-size: 12px;
+  color: var(--tx-1);
+}
+.tg-batch-bar .count {
+  background: var(--accent);
+  color: white;
+  font-weight: 700; font-size: 10.5px;
+  padding: 2px 8px; border-radius: 999px;
+  letter-spacing: .3px;
+}
+.tg-batch-bar .label {
+  font-size: 11px; color: var(--tx-2); font-weight: 500;
+  margin-left: 4px;
+}
+.tg-batch-bar .selectall {
+  font-size: 11px; color: var(--accent); font-weight: 600;
+  margin-left: 4px; cursor: pointer;
+}
+.tg-batch-bar .selectall:hover { text-decoration: underline; }
+.tg-batch-bar .grow { flex: 1; }
+.tg-batch-bar .bbtn {
+  background: transparent; border: none;
+  color: var(--tx-1);
+  padding: 5px 9px; border-radius: 5px;
+  font-size: 11.5px; font-weight: 600;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+  transition: background .12s;
+}
+.tg-batch-bar .bbtn:hover { background: rgba(0,0,0,.05); }
+.tg-batch-bar .bbtn .ic { font-size: 13px; line-height: 1; }
+.tg-batch-bar .bbtn.danger { color: var(--red); }
+.tg-batch-bar .bbtn.danger:hover { background: var(--red-soft); }
+.tg-batch-bar .bbtn.primary { color: var(--accent); }
+.tg-batch-bar .bbtn.primary:hover { background: var(--accent-soft); }
+.tg-batch-bar .divider {
+  width: 0.5px; height: 16px; background: rgba(0,0,0,.1);
+  margin: 0 2px;
+}
+.tg-batch-bar .esc {
+  font-size: 10px; color: var(--tx-3); font-weight: 500;
+  padding: 2px 6px;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  background: rgba(255,255,255,.6);
+  cursor: pointer;
+  margin-left: 4px;
+}
+.tg-batch-bar .esc:hover { background: white; color: var(--tx-1); }
+
+/* ─── ★ 选项卡 ─── */
+.tg-tabs {
+  display: flex; padding: 0 12px; gap: 4px;
+  border-bottom: 0.5px solid rgba(0,0,0,.08);
+  margin-bottom: 4px;
+}
+.tg-tab {
+  padding: 8px 12px;
+  font-size: 12px; font-weight: 600; color: var(--tx-3);
+  cursor: pointer; position: relative;
+  display: flex; align-items: center; gap: 5px;
+  border-bottom: 2px solid transparent;
+  transition: color .15s;
+}
+.tg-tab:hover { color: var(--tx-1); }
+.tg-tab.active {
+  color: var(--tg); border-bottom-color: var(--tg);
+}
+.tg-tab .badge {
+  background: var(--tx-4); color: white;
+  font-size: 9.5px; font-weight: 700;
+  padding: 1px 6px; border-radius: 999px;
+  min-width: 16px; text-align: center;
+}
+.tg-tab.active .badge { background: var(--tg); }
+.tg-tab.alert.active { color: var(--red); border-bottom-color: var(--red); }
+.tg-tab.alert.active .badge { background: var(--red); }
+
+/* ─── 列表 ─── */
+.tg-list {
+  flex: 1; overflow-y: auto; padding: 6px 8px 8px;
+}
+
+/* ─── ★ 单卡 v2 ─── */
+.tg-card {
+  background: white;
+  border: 0.5px solid rgba(0,0,0,.06);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  padding: 12px 13px 11px;
+  position: relative;
+}
+.tg-card.unread { border-left: 3px solid var(--tg); }
+.tg-card.alert  { border-left: 3px solid var(--red); }
+.tg-card.alert.unread { border-left: 3px solid var(--red); }
+.tg-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+
+/* 卡 header: 头像 + 名 + pill + ✕ */
+.tg-card .row1 {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+}
+.tg-card .av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11.5px; font-weight: 700;
+  background: linear-gradient(135deg, #5DADE2, #2874A6);
+  flex-shrink: 0;
+}
+.tg-card .av.alt1 { background: linear-gradient(135deg, #76D7C4, #16A085); }
+.tg-card .av.alt2 { background: linear-gradient(135deg, #F1948A, #C0392B); }
+.tg-card .av.alt3 { background: linear-gradient(135deg, #BB8FCE, #6C3483); }
+.tg-card .av.alt4 { background: linear-gradient(135deg, #F7DC6F, #B7950B); }
+.tg-card .who {
+  font-size: 13px; font-weight: 700; color: var(--tx-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 130px;
+}
+.tg-card .pill {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 4px; flex-shrink: 0;
+}
+.tg-card .pill.dm { background: var(--tg); color: white; }
+.tg-card .pill.gp { background: var(--tg-soft); color: var(--tg-dark); }
+.tg-card .pill.alert { background: var(--red-soft); color: var(--red); }
+.tg-card .grow { flex: 1; }
+.tg-card .x {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(0,0,0,.04); color: var(--tx-3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  flex-shrink: 0;
+}
+.tg-card .x:hover { background: var(--tx-3); color: white; }
+
+/* row2: 群名(若有,小一号灰色) — 群@ 才有 */
+.tg-card .row2 {
+  font-size: 11px; color: var(--tx-3); font-weight: 500;
+  margin-bottom: 6px; padding-left: 34px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* row3: 文本 */
+.tg-card .text {
+  font-size: 13px; line-height: 1.55; color: var(--tx-1);
+  margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+/* row4: 缩略图(可选) */
+.tg-card .thumb {
+  width: 100%; height: 80px;
+  background: linear-gradient(135deg, #ddd, #aaa);
+  border-radius: 6px; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 600;
+  cursor: pointer;
+}
+
+/* row5: ★ 时间单独一行 */
+.tg-card .when {
+  font-size: 11px; color: var(--tx-3); font-weight: 500;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 4px;
+}
+.tg-card .when::before {
+  content: "🕐"; font-size: 9px; opacity: .6;
+}
+
+/* row6: action buttons */
+.tg-card .actions {
+  display: flex; gap: 6px;
+}
+.tg-card .btn {
+  font-size: 11.5px; font-weight: 700;
+  padding: 6px 12px; border-radius: 6px;
+  cursor: pointer; transition: all .12s;
+  border: none;
+}
+.tg-card .btn.primary {
+  background: var(--accent); color: white;
+}
+.tg-card .btn.primary:hover { background: #ff7a26; }
+.tg-card .btn.ghost {
+  background: rgba(0,0,0,.04); color: var(--tx-2);
+}
+.tg-card .btn.ghost:hover { background: rgba(0,0,0,.08); }
+.tg-card .btn.append {
+  background: var(--tg-vsoft); color: var(--tg-dark);
+}
+
+/* 多消息合并指示器(+N) */
+.tg-card .multi-indicator {
+  position: absolute; top: 9px; right: 35px;
+  background: var(--tg); color: white;
+  font-size: 9.5px; font-weight: 700;
+  padding: 1px 6px; border-radius: 999px;
+}
+
+/* ─── ★ 翻页栏 · 暖橘极简 ─── */
+.tg-pager {
+  padding: 6px 10px;
+  border-top: 0.5px solid var(--border);
+  background: rgba(255, 247, 235, 0.7);
+  display: flex; align-items: center; gap: 3px;
+  font-size: 11px; color: var(--tx-2);
+}
+.tg-pager .arrow {
+  width: 24px; height: 24px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; user-select: none;
+  background: transparent; color: var(--tx-1);
+}
+.tg-pager .arrow:hover { background: var(--accent-soft); color: var(--accent); }
+.tg-pager .arrow.disabled {
+  color: var(--tx-4); cursor: not-allowed;
+}
+.tg-pager .arrow.disabled:hover { background: transparent; color: var(--tx-4); }
+.tg-pager .num {
+  min-width: 24px; height: 24px; padding: 0 7px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; user-select: none;
+  background: transparent; color: var(--tx-2);
+}
+.tg-pager .num:hover { background: var(--accent-soft); color: var(--accent); }
+.tg-pager .num.current {
+  background: var(--accent); color: white;
+}
+.tg-pager .num.dots { cursor: default; color: var(--tx-3); padding: 0 2px; }
+.tg-pager .num.dots:hover { background: transparent; color: var(--tx-3); }
+.tg-pager .info {
+  margin-left: auto; font-size: 10.5px; color: var(--tx-3); font-weight: 500;
+}
+
+/* 底 footer */
+.tg-foot {
+  padding: 8px 14px;
+  border-top: 0.5px solid rgba(0,0,0,.06);
+  font-size: 11px; color: var(--tx-3);
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.5);
+}
+.tg-foot .dotc { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.tg-foot .grow { flex: 1; }
+.tg-foot .gear { color: var(--tg); cursor: pointer; font-weight: 700; }
+
+/* ─── 注解 ─── */
+.note {
+  max-width: 1700px; margin: 24px auto 0;
+  background: white; border-radius: 14px; padding: 18px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.note h2 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+.note .grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+}
+.note .item h3 {
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  margin-bottom: 4px;
+}
+.note .item p { font-size: 12.5px; color: var(--tx-2); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>TG 通知箱 v2 · UI 稿</h1>
+  <p>对应你提的 6 条优化的实装方案。<b>左 3 列保持现状</b>(仅占位示意),重点改最右侧第 4 列。下方有详情面板的"同人私聊追加"分组样式。</p>
+  <ul>
+    <li>① <b>UI 调粒度:</b> 字号 13px(从 11.5px 提)、字体 700/600 加权 + system-ui 抗锯齿、按钮 padding 加大、行间距统一</li>
+    <li>② <b>悬浮猫:</b> 单独走"离线裁好的方图",运行时不再 trim/resize(独立任务)</li>
+    <li>③ <b>同人私聊合并:</b> 转任务时检测同 person + 24h 内 + 类型私聊 → 追加到已有任务的 messages[];详情面板"消息记录"分组列出</li>
+    <li>④ <b>时间独立一行:</b> 以 🕐 + "X 分钟前" 形式单占一行,信息层级更清楚</li>
+    <li>⑤ <b>三选项卡:</b> 全部 / 私聊 / 群 @ / 报警(关键词命中)</li>
+    <li>⑥ <b>列表密度:</b> 卡片高度 ~110-130px,16:9 屏 880px 高能塞 6-7 张卡</li>
+  </ul>
+</div>
+
+<div class="window">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="title-text">LazyCat</span>
+  </div>
+  <div class="body4">
+
+    <!-- 1. Sidebar 占位 -->
+    <div class="col col-sb">
+      <div style="font-size:13px;font-weight:700;color:var(--tx-1);margin-bottom:8px;">视图</div>
+      <div>⏰ 今天 · 6</div>
+      <div style="margin-top:6px;">📅 本周 · 14</div>
+      <div style="margin-top:6px;">📥 全部 · 23</div>
+      <div style="font-size:13px;font-weight:700;color:var(--tx-1);margin:18px 0 8px;">人</div>
+      <div>L  len · 5</div>
+      <div style="margin-top:6px;">M  Max · 2</div>
+      <div style="font-size:13px;font-weight:700;color:var(--tx-1);margin:18px 0 8px;">优先级</div>
+      <div style="color:var(--red)">● T0 · 3</div>
+      <div style="margin-top:4px;color:var(--accent)">● T1 · 6</div>
+      <div style="margin-top:4px;color:var(--green)">● T2 · 14</div>
+    </div>
+
+    <!-- 2. Mid list 占位 -->
+    <div class="col col-mid">
+      <div style="font-size:17px;font-weight:600;color:var(--tx-1);margin-bottom:8px;">今天 <span style="color:var(--tx-3);font-size:12px;">6 个</span></div>
+      <div style="background:var(--accent);color:white;padding:9px 12px;border-radius:6px;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:600;">📨 老板 · KYC 等级 bug</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px;">@老板 · 2 条 · 今天 14:22</div>
+      </div>
+      <div style="background:white;padding:9px 12px;border-radius:6px;margin-bottom:6px;border:0.5px solid rgba(0,0,0,.05);">
+        <div style="font-size:13px;font-weight:500;color:var(--tx-1);">88 静态资源 支持 8Max</div>
+        <div style="font-size:11px;color:var(--tx-3);margin-top:2px;">@运营 · 今天 12:39</div>
+      </div>
+      <div style="background:white;padding:9px 12px;border-radius:6px;margin-bottom:6px;border:0.5px solid rgba(0,0,0,.05);">
+        <div style="font-size:13px;font-weight:500;color:var(--tx-1);">技术方案 · GRPC saga</div>
+        <div style="font-size:11px;color:var(--tx-3);margin-top:2px;">@len · 今天 12:39</div>
+      </div>
+    </div>
+
+    <!-- 3. Detail (展示"同人私聊追加" thread) -->
+    <div class="col col-detail">
+      <h2>📨 老板 · KYC 等级 bug</h2>
+      <div class="sub">👤 @老板 · 创建 今天 14:08 · 来源 Telegram 私聊</div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <span style="background:var(--accent);color:white;padding:2px 10px;border-radius:4px;font-size:11px;font-weight:700;">T1 重要</span>
+        <span style="background:var(--accent);color:white;padding:2px 10px;border-radius:4px;font-size:11px;font-weight:700;">⚡ 进行中</span>
+      </div>
+
+      <h3>消息记录(2 条已合并)</h3>
+      <div class="thread">
+        <div class="msg">
+          <div class="head">
+            <span class="pill">私聊</span>
+            <span>老板</span>
+            <span class="when">今天 14:08</span>
+          </div>
+          老板说要紧急修一下 KYC 那个等级名称 bug,今天下班前能搞完吗?
+        </div>
+        <div class="msg">
+          <div class="head">
+            <span class="pill">私聊</span>
+            <span>老板</span>
+            <span class="when">今天 14:22</span>
+          </div>
+          再补充一下:线上现在已经有用户反馈说看到"VIP1 - VIP1"重复了,优先级提到 P0。
+        </div>
+      </div>
+
+      <h3>属性</h3>
+      <div style="font-size:12.5px;line-height:1.85;">
+        <div><span style="color:var(--tx-3);display:inline-block;width:60px;">人员</span><b>@老板</b></div>
+        <div><span style="color:var(--tx-3);display:inline-block;width:60px;">优先级</span><b style="color:var(--accent)">T1 重要</b></div>
+        <div><span style="color:var(--tx-3);display:inline-block;width:60px;">提醒</span>未设置</div>
+        <div><span style="color:var(--tx-3);display:inline-block;width:60px;">来源</span>Telegram 私聊</div>
+        <div><span style="color:var(--tx-3);display:inline-block;width:60px;">创建</span>今天 14:08</div>
+      </div>
+    </div>
+
+    <!-- ★ 4. TG 通知箱 v2 -->
+    <div class="col col-tg">
+      <div class="tg-head">
+        <div class="ic">✈</div>
+        <h2>TG 提示</h2>
+        <div class="cnt">5</div>
+        <div class="grow"></div>
+        <div class="select-mode active">✓ 选择</div>
+        <div class="clear-all">全部已读</div>
+      </div>
+
+      <div class="tg-tabs">
+        <div class="tg-tab active">全部 <span class="badge">5</span></div>
+        <div class="tg-tab">私聊 <span class="badge">2</span></div>
+        <div class="tg-tab">群 @ <span class="badge">2</span></div>
+        <div class="tg-tab alert">报警 <span class="badge">1</span></div>
+      </div>
+
+      <div class="tg-list">
+
+        <!-- 卡 1: 报警异常 - 选中 -->
+        <div class="tg-card unread alert selected">
+          <div class="row1">
+            <div class="check on">✓</div>
+            <div class="av alt2">金</div>
+            <div class="who">金融卡</div>
+            <span class="pill alert">报警 · 群 @</span>
+            <div class="grow"></div>
+            <div class="x">×</div>
+          </div>
+          <div class="row2">$+ 研发 - 金融卡技术群 通知群</div>
+          <div class="text">【严重】四方共享卡 交易异常授权通知 · (UPDATE)报警 ID:251</div>
+          <div class="when">2 分前</div>
+          <div class="actions">
+            <button class="btn primary">＋ 转任务</button>
+            <button class="btn ghost">已处理</button>
+          </div>
+        </div>
+
+        <!-- 卡 2: 同人私聊 +2(已合并) - 选中 -->
+        <div class="tg-card unread selected">
+          <div class="row1">
+            <div class="check on">✓</div>
+            <div class="av alt2">老</div>
+            <div class="who">老板</div>
+            <span class="pill dm">私聊</span>
+            <div class="grow"></div>
+            <div class="x">×</div>
+          </div>
+          <span class="multi-indicator">+2 条</span>
+          <div class="text">再补充一下:线上现在已经有用户反馈说看到"VIP1 - VIP1"重复了,优先级提到 P0。</div>
+          <div class="when">5 分前</div>
+          <div class="actions">
+            <button class="btn append">＋ 追加到已有任务</button>
+            <button class="btn ghost">已处理</button>
+          </div>
+        </div>
+
+        <!-- 卡 3: 群 @ + 图片 - 未选中 -->
+        <div class="tg-card unread">
+          <div class="row1">
+            <div class="check"></div>
+            <div class="av alt1">设</div>
+            <div class="who">设计同学</div>
+            <span class="pill gp">群 @</span>
+            <div class="grow"></div>
+            <div class="x">×</div>
+          </div>
+          <div class="row2">设计组同步</div>
+          <div class="text">@你 锁屏方案 v2 那个 sketch 已经传共享盘了。最新效果图见下:</div>
+          <div class="when">15 分前</div>
+          <div class="actions">
+            <button class="btn primary">＋ 转任务</button>
+            <button class="btn ghost">已处理</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ★ 批量操作工具栏(仅在选择模式 active 时显示) -->
+      <div class="tg-batch-bar">
+        <span class="count">2</span>
+        <span class="label">已选 / 共 5</span>
+        <span class="selectall">全选</span>
+        <span class="grow"></span>
+        <button class="bbtn"><span class="ic">✓</span>已读</button>
+        <button class="bbtn primary"><span class="ic">＋</span>转任务</button>
+        <button class="bbtn danger"><span class="ic">🗑</span>删除</button>
+        <span class="divider"></span>
+        <span class="esc" title="按 esc 也能退出">esc</span>
+      </div>
+
+      <!-- ★ 翻页栏 -->
+      <div class="tg-pager">
+        <div class="arrow" title="上一页">‹</div>
+        <div class="num">1</div>
+        <div class="num current">2</div>
+        <div class="num">3</div>
+        <div class="num">4</div>
+        <div class="num dots">…</div>
+        <div class="num">9</div>
+        <div class="arrow" title="下一页">›</div>
+        <span class="info">第 2 / 9 页 · 共 47 条</span>
+      </div>
+
+      <div class="tg-foot">
+        <span class="dotc"></span>
+        <span>已连接 · 监听中</span>
+        <span class="grow"></span>
+        <span class="gear">⚙ 设置</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="note">
+  <h2>实装清单 (按你 6 条对位)</h2>
+  <div class="grid">
+    <div class="item">
+      <h3>① UI 字 / 按钮调粒度</h3>
+      <p>字号统一 13px 主文本 / 11px 辅文本;按钮 padding 6px 12px、圆角 6px、字 11.5px / 700;NSTextField 字渲染加 <code>allowsExpansionToolTips=false</code> + 系统字体 .systemFont 而不是默认。Retina 下要用 .systemFont(ofSize: 13, weight: .medium) 才不糊。</p>
+    </div>
+    <div class="item">
+      <h3>② 悬浮猫终极方案</h3>
+      <p>已离线把 Assets/cat.png 裁成 476×476 居中正方版,运行时直接用 NSImageView 默认 aspect-fit,不再 trim/resize 后处理。1.10.2 起生效。</p>
+    </div>
+    <div class="item">
+      <h3>③ 同人私聊追加</h3>
+      <p>转任务时:在 Store 里按 <code>person</code> + <code>chatType=private</code> + <code>createdAt 距今&lt;24h</code> 找已有任务。命中 → 追加 messages[],并把 +N 角标显示;否则建新任务。任务标题以群名/用户名 + 智能截断(40 字) 自动取,可手动改。</p>
+    </div>
+    <div class="item">
+      <h3>④ 时间独立一行</h3>
+      <p>从 row1 的 timeLbl 拆出来,放在 text 之后单独一行,prefix 一个 🕐 + "X 分前 / X 小时前 / 昨天 14:08"。视觉层级:名字 → 来源 pill → 文本 → 时间 → 动作按钮。</p>
+    </div>
+    <div class="item">
+      <h3>⑤ 三选项卡(全部 / 私聊 / 群@ / 报警)</h3>
+      <p>NSSegmentedControl 顶部插一行;过滤逻辑用 enum TGTab { all, dm, group, alert }。报警匹配正则:<code>/告警|alert|alarm|报警|异常|exception|fail|崩溃|严重|critical/i</code>。tab 上显示对应数量徽章。</p>
+    </div>
+    <div class="item">
+      <h3>⑥ 列表密度</h3>
+      <p>卡片自适应高度(110-180px,带图更高),卡间距 8px,边框圆角 10px。880px 高的栏目能塞 6-7 张卡;支持滚动,不限上限。未读卡左边 3px 蓝边,报警 3px 红边。</p>
+    </div>
+    <div class="item">
+      <h3>⑦ 翻页</h3>
+      <p>每页 6 条,底部页码栏:‹ 1 2 ... 9 ›。当前页高亮 TG 蓝;dots 表示中间省略;右侧显示"第 X / Y 页 · 共 N 条"。切 tab 时自动回到第 1 页;新消息到达时:如果在第 1 页则自动插入,否则角标 +1 但不打断当前阅读位置。</p>
+    </div>
+    <div class="item">
+      <h3>⑧ 批量处理</h3>
+      <p>顶部「✓ 选择」按钮切批量模式。开启后每张卡左侧出现 checkbox,选中状态用 TG 浅蓝底色标识。底部出现 TG 蓝色工具栏:已选 N · 全选 / 批量已读 / 批量转任务 / 批量删除 / 取消。批量转任务遵循"同人私聊追加"逻辑(多人多类型分别开任务,同人私聊聚合到一个)。退出批量模式自动清空选择。</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

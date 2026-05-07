@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat 使用说明</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  body {
+    font-family: -apple-system, "PingFang SC", sans-serif;
+    font-size: 12pt;
+    line-height: 1.7;
+    color: #222;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 26pt;
+    color: #d35400;
+    border-bottom: 3px solid #d35400;
+    padding-bottom: 8px;
+    margin-top: 0;
+  }
+  h2 {
+    font-size: 18pt;
+    color: #2980b9;
+    margin-top: 32px;
+    border-left: 6px solid #2980b9;
+    padding-left: 12px;
+  }
+  h3 {
+    font-size: 14pt;
+    color: #16a085;
+    margin-top: 22px;
+  }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0; padding-left: 28px; }
+  li { margin: 6px 0; }
+  code {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10.5pt;
+  }
+  pre {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 10pt;
+    line-height: 1.5;
+    overflow-x: auto;
+  }
+  pre code { background: transparent; border: 0; color: inherit; padding: 0; }
+  .tip {
+    background: #fef9e7;
+    border-left: 5px solid #f39c12;
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 4px;
+  }
+  .warn {
+    background: #fdedec;
+    border-left: 5px solid #e74c3c;
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 4px;
+  }
+  .ok {
+    background: #eafaf1;
+    border-left: 5px solid #27ae60;
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 4px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 11pt;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #ecf0f1; color: #34495e; }
+  .step {
+    background: #eaf2f8;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 12px 0;
+  }
+  .step strong { color: #2980b9; }
+  .footer {
+    margin-top: 60px;
+    padding-top: 16px;
+    border-top: 1px solid #ddd;
+    color: #888;
+    font-size: 10pt;
+    text-align: center;
+  }
+  .kbd {
+    display: inline-block;
+    background: #f8f8f8;
+    border: 1px solid #ccc;
+    border-bottom: 2px solid #999;
+    border-radius: 4px;
+    padding: 1px 7px;
+    margin: 0 2px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 10pt;
+    color: #333;
+  }
+</style>
+</head>
+<body>
+
+<h1>🐱 LazyCat 使用说明</h1>
+
+<p><strong>LazyCat</strong> 是一只长在你 Mac 桌面上的小猫，它替你记任务、提醒你、统计你今天敲了多少键。功能很多但都很简单，下面挨个讲。</p>
+
+<div class="tip"><strong>给谁看：</strong>第一次拿到 LazyCat 的人。这份是「不写一行代码也能看懂」的版本。</div>
+
+<h2>1. 怎么把 LazyCat 装进电脑</h2>
+
+<p>拿到 <code>LazyCat-x.x.x.dmg</code> 后：</p>
+
+<ol class="step">
+  <li>双击 <code>.dmg</code>，会出现一个窗口</li>
+  <li>把里面那只 <strong>LazyCat</strong> 拖到旁边的 <strong>Applications</strong> 文件夹</li>
+  <li>到「应用程序」里双击 LazyCat 启动</li>
+</ol>
+
+<div class="warn"><strong>第一次启动会被 macOS 拦下来 ✗</strong>：因为 LazyCat 没花钱买 Apple 开发者证书，macOS 会说「无法验证开发者」。
+<br><br>
+<strong>正确做法：</strong>右键点 LazyCat → 选「打开」→ 弹出对话框上再点「打开」。这一次以后再启动就不弹了。
+</div>
+
+<h2>2. LazyCat 都能干啥</h2>
+
+<table>
+<tr><th>功能</th><th>怎么用</th></tr>
+<tr><td>📝 记任务</td><td>主窗口顶部输入「@张三」+ 选优先级 + 写正文 → 回车</td></tr>
+<tr><td>🔔 提醒</td><td>每天每小时（可配）弹一次「你还有 N 件没做」</td></tr>
+<tr><td>🐱 桌面小猫</td><td>右上角有只动的小猫陪你；可换成橘猫、企鹅、或你自己的图</td></tr>
+<tr><td>🔒 一键锁屏</td><td>按 <span class="kbd">⌥</span><span class="kbd">1</span> → 所有屏幕变黑磨砂；再按一次解锁</td></tr>
+<tr><td>⌨️ 打字统计</td><td>统计你今天一共按了多少次键，菜单栏小猫旁边实时显示</td></tr>
+<tr><td>🌙 始终深色</td><td>不论 Mac 系统是浅色还是深色，LazyCat 永远深色</td></tr>
+</table>
+
+<h2>3. 主窗口怎么用</h2>
+
+<h3>记一条任务</h3>
+<ol>
+  <li>主窗口顶部第一行：写人名（必填）</li>
+  <li>选优先级：<strong>无 / T2 / T1 / T0</strong>（T0 最重要）</li>
+  <li>下方大格写正文（最多 2000 字，可贴图）</li>
+  <li>按 <span class="kbd">回车</span> 或点「添加」</li>
+</ol>
+
+<h3>列表上的标识</h3>
+<ul>
+  <li>右上角 <strong>红 / 橙 / 灰 / 绿色块</strong>：分别是滞留 7 天 / 3-6 天 / 1-2 天 / 已完成耗时</li>
+  <li><strong>双击圆圈</strong>完成任务（单击只是确认）</li>
+  <li><strong>点优先级</strong>胶囊：可改优先级 / 改人名 / 设提醒</li>
+  <li><strong>点任务正文</strong>：打开详情大窗（可继续写、贴图、改备注）</li>
+  <li><strong>点橘色 「@未指定」</strong>：补填人名（旧任务忘填可这样补）</li>
+</ul>
+
+<h2>4. 桌面小猫怎么调教</h2>
+
+<p>菜单栏 <strong>顶部右侧</strong>有只小猫图标，点它出菜单：</p>
+
+<table>
+<tr><th>菜单项</th><th>作用</th></tr>
+<tr><td>桌面悬浮窗</td><td>开 / 关那只小猫</td></tr>
+<tr><td>悬浮形态</td><td>选 🐱 走动小猫 / 🐈 橘色小猫 / 🐧 招手企鹅 / 🖼️ 自定义图片</td></tr>
+<tr><td>选择自定义图片…</td><td>挑你电脑上任意一张图当桌面伙伴（自动抠白底）</td></tr>
+<tr><td>悬浮尺寸</td><td>10 % - 100 %，10 档</td></tr>
+<tr><td>悬浮透明度</td><td>30 % - 100 %（小红点不会变透明）</td></tr>
+<tr><td>打字抖动</td><td>关闭 / 上下轻 / 上下重 / 左右轻 / 左右重</td></tr>
+</table>
+
+<h2>5. 一键锁屏（防别人偷看）</h2>
+
+<p>默认快捷键 <span class="kbd">⌥</span><span class="kbd">1</span>（Option + 1）</p>
+
+<ul>
+  <li>任何 app 在前台都能按；按下后<strong>所有屏幕</strong>变成磨砂遮罩，时间和当前任务居中显示</li>
+  <li>再按一次 <span class="kbd">⌥</span><span class="kbd">1</span> → 解锁</li>
+  <li>遮罩里<strong>不显示快捷键提示</strong>（防止陌生人看到一眼就解开）</li>
+  <li>不喜欢 ⌥1？菜单 → 锁屏快捷键，可换 ⌥2、⇧⌘L、F13 等十几个预设</li>
+</ul>
+
+<div class="warn"><strong>注意</strong>：菜单里如果选了「关闭（不绑定）」，就再没办法解锁，只能强退 LazyCat。</div>
+
+<h2>6. 今日打字数 ⌨️</h2>
+
+<p>LazyCat 会偷偷记你<strong>今天</strong>按了多少键（只数次数，<u>不记内容</u>）。</p>
+
+<ul>
+  <li>菜单栏小猫图标<strong>右边</strong>会出现数字，每按一下就涨</li>
+  <li>每天 <strong>0 点自动归零</strong>，旧数据保留</li>
+  <li>快速打字时，桌面小猫会暂时变成大数字 → 停下 1.5 秒后变回小猫</li>
+</ul>
+
+<h3>第一次必须给「输入监控」权限</h3>
+
+<div class="step">
+<strong>步骤：</strong>
+<ol>
+  <li>菜单栏小猫 → <strong>「申请打字监控权限…」</strong></li>
+  <li>系统弹「允许 LazyCat 监听键盘？」→ 点 <strong>允许</strong></li>
+  <li>菜单栏小猫 → <strong>退出 LazyCat</strong></li>
+  <li>重新打开 LazyCat（Dock 或 Applications）</li>
+  <li>敲两个字试试，数字应该开始涨</li>
+</ol>
+</div>
+
+<h3>权限给了但不生效（每次升级会遇到）</h3>
+
+<div class="warn">这是 ad-hoc 签名 app 的通病。每次升级 LazyCat 的内部「指纹」都会变，macOS 的旧授权会失效。修法：</div>
+
+<div class="step">
+<ol>
+  <li>菜单栏小猫 → <strong>「权限失效？重置并重新申请…」</strong></li>
+  <li>弹出诊断窗 → 点 <strong>「打开输入监控面板」</strong></li>
+  <li>在「输入监控」列表里<strong>找到 LazyCat 那一条 → 点旁边的【—】把整条删掉</strong>（关键！不是取消勾选，是删除）</li>
+  <li>关闭系统设置</li>
+  <li>菜单栏小猫 → 退出 LazyCat → 重新打开</li>
+  <li>系统会重新弹「允许 LazyCat 监听键盘？」→ 点 <strong>允许</strong></li>
+  <li>再退出 LazyCat 一次 → 重新打开</li>
+  <li>数字应该开始涨了</li>
+</ol>
+</div>
+
+<h2>7. 主窗口的小贴士</h2>
+
+<ul>
+  <li>菜单栏小猫 → <strong>背景透明度</strong>可调 5%-100%；调到很低连任务卡片都半透，看着像贴在桌面上</li>
+  <li>菜单栏小猫 → <strong>关于 LazyCat</strong> 可以看到：版本号 / 构建时间 / app 路径，每次更新后看一眼能确认装没装上</li>
+  <li>菜单栏小猫 → <strong>在 Finder 中显示数据</strong>：你的所有任务存在 <code>~/Library/Application Support/MyTodoApp/data.json</code>，纯 JSON 想备份直接拷</li>
+</ul>
+
+<h2>8. 想换头像？</h2>
+
+<p>菜单栏小猫 → <strong>悬浮形态 → 选择自定义图片…</strong></p>
+
+<ul>
+  <li>选你电脑上任何一张图（PNG/JPG/HEIC 都行）</li>
+  <li>LazyCat 会自动把白底抠掉变透明</li>
+  <li>悬浮形态自动切到「🖼️ 自定义图片」</li>
+</ul>
+
+<p>或者高级玩法：把图改名为</p>
+<ul>
+  <li><code>cat-orange.png</code> → 替换橘猫</li>
+  <li><code>penguin.png</code> → 替换企鹅</li>
+  <li><code>cat-orange-01.png ~ cat-orange-24.png</code>（24 张）→ 24 帧动画</li>
+</ul>
+<p>放进菜单栏小猫 → <strong>「打开自定义形象图片目录…」</strong>那个文件夹里。</p>
+
+<h2>9. 常见问题</h2>
+
+<h3>启动后看到的是「事件记录」/「滴答清单 Lite」而不是 LazyCat</h3>
+<p>说明你装的是老版本，去最新 dmg 重装。</p>
+
+<h3>多屏没全锁住</h3>
+<p>v1.7+ 已经修，每个屏都会盖上遮罩。如果还有问题：</p>
+<ul>
+  <li>检查系统设置 → 桌面与 Dock → 「显示器各自有独立空间」要打开</li>
+  <li>把 LazyCat 退出再开一次</li>
+</ul>
+
+<h3>升级后悬浮窗位置乱了 / 图片偏离</h3>
+<p>v1.7.10+ 已经修。如果还偏：菜单栏小猫 → 桌面悬浮窗（关再开）。</p>
+
+<h3>悬浮窗一直挡视线</h3>
+<p>菜单栏小猫 → 悬浮透明度 → 30%（半透）；或者把<strong>悬浮尺寸</strong>调到 30% / 20%。</p>
+
+<h3>不想用打字统计</h3>
+<p>那就不给「输入监控」权限。LazyCat 其它功能（任务、悬浮、锁屏）全部正常工作，只是「今日打字 N 次」永远显示 0。</p>
+
+<h2>10. 数据存在哪里</h2>
+
+<table>
+<tr><th>东西</th><th>路径</th></tr>
+<tr><td>任务数据</td><td><code>~/Library/Application Support/MyTodoApp/data.json</code></td></tr>
+<tr><td>任务里的图片</td><td><code>~/Library/Application Support/MyTodoApp/images/</code></td></tr>
+<tr><td>自定义形象图片</td><td><code>~/Library/Application Support/MyTodoApp/{cat,cat-orange,penguin,custom}.png</code></td></tr>
+<tr><td>设置（透明度、尺寸、形态等）</td><td>UserDefaults，<code>com.local.mytodo</code> domain</td></tr>
+<tr><td>打字数</td><td>UserDefaults，按日期分 key（如 <code>MyTodo.typingCount.2026-04-28</code>）</td></tr>
+<tr><td>运行日志（出问题给开发看）</td><td><code>/tmp/mytodo.log</code></td></tr>
+</table>
+
+<h2>11. 升级</h2>
+
+<p>新版 dmg 拖到 Applications 直接覆盖即可。任务数据不会丢（因为存在用户目录，不在 .app 里）。</p>
+
+<div class="warn">升级后<strong>「输入监控」权限会失效</strong>，按 §6 末尾的步骤重新申请。这是 macOS 安全机制，不是 LazyCat 的 bug。</div>
+
+<div class="footer">
+LazyCat — 一只在桌面陪你工作的猫<br>
+本说明对应版本 1.7.x · 内容如有更新以菜单栏「关于 LazyCat」为准
+</div>
+
+</body>
+</html>
