@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · UI v5 · 三套 macOS App 风格</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --orange: #FF8C42;
+  --orange-d: #E0762D;
+  --cream: #fff7ec;
+  --tx1: #1d1d1f;
+  --tx2: #515154;
+  --tx3: #86868b;
+  --tx4: #b3b3b8;
+  --border: #e5e5ea;
+  --border-d: #d2d2d7;
+  --red: #ff3b30;
+  --green: #30d158;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  background: linear-gradient(135deg, #c8c2b3 0%, #d8d0bf 50%, #c4bfb0 100%);
+  background-attachment: fixed;
+  color: var(--tx1);
+  -webkit-font-smoothing: antialiased;
+  padding: 30px 24px;
+  min-height: 100vh;
+}
+
+.intro {
+  max-width: 1500px; margin: 0 auto 32px;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(20px);
+  border-radius: 12px; padding: 18px 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+.intro h1 { font-size: 19px; font-weight: 700; margin-bottom: 4px; letter-spacing: -.3px; }
+.intro p { color: var(--tx2); font-size: 13px; line-height: 1.6; }
+
+.row {
+  max-width: 1500px; margin: 0 auto 38px;
+}
+.tag {
+  display: inline-block; background: var(--orange); color: white;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+  padding: 3px 10px; border-radius: 4px; margin-bottom: 8px;
+}
+.row h2 { font-size: 22px; font-weight: 800; margin-bottom: 4px; letter-spacing: -.4px; color: white; text-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.row .pitch { color: rgba(255,255,255,.92); font-size: 13.5px; line-height: 1.5; margin-bottom: 14px; text-shadow: 0 1px 2px rgba(0,0,0,.15); }
+
+/* ─── macOS window chrome ─── */
+.win {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.32),
+              0 0 0 0.5px rgba(0,0,0,.4),
+              inset 0 0.5px 0 rgba(255,255,255,.4);
+}
+.titlebar {
+  height: 28px;
+  display: flex; align-items: center;
+  padding: 0 12px;
+  position: relative;
+}
+.tl { display: flex; gap: 8px; align-items: center; }
+.tl .dot { width: 12px; height: 12px; border-radius: 50%; }
+.tl .dot.r { background: #ff5f57; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.2); }
+.tl .dot.y { background: #ffbd2e; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.2); }
+.tl .dot.g { background: #28c840; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.2); }
+.tl-title {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 600; color: var(--tx2); pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════
+   风格 A · macOS Notes / Reminders 三栏式
+   ════════════════════════════════════════════════ */
+
+.A {
+  background: rgba(245,243,240,0.85); backdrop-filter: blur(40px);
+  border: 0.5px solid rgba(0,0,0,.12);
+}
+.A .titlebar {
+  background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(245,240,232,.3));
+  border-bottom: 0.5px solid rgba(0,0,0,.08);
+}
+
+.A-body { display: flex; height: 580px; }
+
+/* sidebar */
+.A-side {
+  width: 220px;
+  background: rgba(243,239,233,0.7);
+  border-right: 0.5px solid rgba(0,0,0,.08);
+  padding: 8px;
+  font-size: 13px;
+}
+.A-search {
+  background: rgba(0,0,0,.06);
+  border-radius: 6px;
+  padding: 5px 9px 5px 26px;
+  font-size: 12px; color: var(--tx2);
+  margin-bottom: 12px;
+  position: relative;
+}
+.A-search::before {
+  content: "🔍"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; opacity: .55;
+}
+.A-side-h {
+  font-size: 11px; font-weight: 700; color: var(--tx3);
+  text-transform: uppercase; letter-spacing: .8px;
+  padding: 8px 8px 4px;
+}
+.A-nav {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 5px;
+  font-size: 13px; color: var(--tx1);
+  cursor: pointer;
+}
+.A-nav.on { background: rgba(0,0,0,.07); font-weight: 600; }
+.A-nav .ico { width: 18px; text-align: center; opacity: .7; font-size: 12px; }
+.A-nav.on .ico { color: var(--orange); opacity: 1; }
+.A-nav .num { margin-left: auto; font-size: 11.5px; color: var(--tx3); font-variant-numeric: tabular-nums; }
+.A-pal { display: flex; gap: 4px; margin-left: 26px; padding: 4px 0; }
+.A-pal .av {
+  width: 18px; height: 18px; border-radius: 50%; font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700;
+}
+
+/* mid list */
+.A-mid {
+  width: 320px;
+  background: rgba(248,246,242,0.6);
+  border-right: 0.5px solid rgba(0,0,0,.06);
+}
+.A-mid-h {
+  padding: 12px 16px 8px;
+  display: flex; align-items: baseline; gap: 8px;
+  border-bottom: 0.5px solid rgba(0,0,0,.06);
+}
+.A-mid-h .t { font-size: 17px; font-weight: 700; color: var(--tx1); letter-spacing: -.3px; }
+.A-mid-h .n { font-size: 12px; color: var(--tx3); margin-left: auto; }
+.A-mid-list { padding: 4px 8px; overflow-y: auto; }
+.A-row {
+  padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  display: flex; gap: 8px; align-items: flex-start;
+  border-bottom: 0.25px solid rgba(0,0,0,.04);
+}
+.A-row.on { background: var(--orange); }
+.A-row.on .t, .A-row.on .meta { color: white !important; }
+.A-row .check {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1.5px solid var(--border-d); margin-top: 2px;
+  flex-shrink: 0;
+}
+.A-row.on .check { border-color: rgba(255,255,255,.6); }
+.A-row.done .check { background: var(--orange); border-color: var(--orange); }
+.A-row .pri { width: 4px; align-self: stretch; border-radius: 2px; flex-shrink: 0; margin-top: 1px; margin-bottom: 1px; }
+.A-row .pri.t0 { background: var(--red); }
+.A-row .pri.t1 { background: var(--orange); }
+.A-row .pri.t2 { background: var(--green); }
+.A-row .b { flex: 1; min-width: 0; }
+.A-row .t { font-size: 13px; font-weight: 600; color: var(--tx1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.A-row.on .t { font-weight: 700; }
+.A-row .meta { font-size: 11px; color: var(--tx3); margin-top: 2px; }
+
+/* detail / right */
+.A-det { flex: 1; padding: 18px 22px; overflow-y: auto; background: white; }
+.A-det h1 { font-size: 18px; font-weight: 700; color: var(--tx1); margin-bottom: 8px; letter-spacing: -.3px; }
+.A-det .who { font-size: 12px; color: var(--tx3); margin-bottom: 16px; display: flex; gap: 10px; align-items: center; }
+.A-det .pri-pill {
+  font-size: 11px; font-weight: 700; padding: 2px 8px;
+  background: rgba(255,140,66,.15); color: var(--orange-d); border-radius: 4px;
+}
+.A-det .body { font-size: 13px; color: var(--tx1); line-height: 1.7; margin-bottom: 16px; }
+.A-det .body code { background: rgba(0,0,0,.05); padding: 1px 5px; border-radius: 3px; font-family: SF Mono, Menlo, monospace; font-size: 12px; }
+.A-det h3 { font-size: 12px; font-weight: 700; color: var(--tx3); text-transform: uppercase; letter-spacing: .5px; margin: 16px 0 6px; }
+.A-det .imgs { display: flex; gap: 6px; }
+.A-det .thumb {
+  width: 56px; height: 56px; border-radius: 6px;
+  background: linear-gradient(135deg, #FFD082, #FF8C42);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px;
+}
+.A-det .meta-grid { display: grid; grid-template-columns: 80px 1fr; gap: 6px 12px; font-size: 12px; }
+.A-det .meta-grid .k { color: var(--tx3); }
+.A-det .meta-grid .v { color: var(--tx1); }
+
+
+/* ════════════════════════════════════════════════
+   风格 B · Things 3 单栏 · floating input
+   ════════════════════════════════════════════════ */
+
+.B {
+  background: linear-gradient(135deg, #fffaf2, #fff4e3);
+  border: 0.5px solid rgba(0,0,0,.12);
+}
+.B .titlebar {
+  background: transparent;
+  border-bottom: 0.25px solid rgba(0,0,0,.08);
+}
+
+.B-head {
+  padding: 4px 16px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.B-head .star { font-size: 22px; color: var(--orange); }
+.B-head h1 { font-size: 24px; font-weight: 800; color: var(--tx1); letter-spacing: -.5px; }
+.B-head .grow { flex: 1; }
+.B-head .chip {
+  background: rgba(0,0,0,.05); padding: 4px 10px; border-radius: 999px;
+  font-size: 11.5px; color: var(--tx2); font-weight: 600;
+  display: flex; align-items: center; gap: 5px;
+}
+.B-head .chip .v { color: var(--orange-d); font-weight: 700; font-variant-numeric: tabular-nums; }
+.B-head .iconbtn {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: rgba(0,0,0,.04);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--tx2); cursor: pointer;
+}
+
+.B-body {
+  height: 540px; overflow-y: auto;
+  padding: 0 18px 80px;
+  position: relative;
+}
+
+.B-section { margin-bottom: 20px; }
+.B-section-h {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 8px 6px; margin-bottom: 4px;
+}
+.B-section-h .t {
+  font-size: 16px; font-weight: 800; letter-spacing: -.3px;
+}
+.B-section-h .t.late { color: var(--red); }
+.B-section-h .n { color: var(--tx3); font-size: 13px; }
+.B-section-h .grow { flex: 1; }
+
+.B-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.B-row:hover { background: rgba(255,140,66,.08); }
+.B-row .check {
+  width: 17px; height: 17px; border-radius: 50%;
+  border: 1.5px solid var(--border-d);
+  flex-shrink: 0; background: white;
+  position: relative;
+}
+.B-row .check.done {
+  background: var(--orange); border-color: var(--orange);
+}
+.B-row .check.done::before {
+  content: "✓"; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 800;
+}
+.B-row .star {
+  width: 14px; text-align: center; font-size: 11px;
+}
+.B-row .star.t0 { color: var(--red); }
+.B-row .star.t1 { color: var(--orange); }
+.B-row .star.t2 { color: var(--green); }
+.B-row .t {
+  flex: 1; font-size: 14px; color: var(--tx1); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.B-row.done .t { color: var(--tx3); text-decoration: line-through; }
+.B-row .who {
+  font-size: 11.5px; color: var(--tx2); font-weight: 600;
+  background: rgba(0,0,0,.05); padding: 1px 7px; border-radius: 4px;
+}
+.B-row .when { font-size: 11.5px; color: var(--tx3); font-weight: 500; min-width: 64px; text-align: right; }
+.B-row .when.late { color: var(--red); font-weight: 700; }
+.B-row .badges { font-size: 11px; opacity: .7; }
+
+/* floating input bar */
+.B-floating {
+  position: absolute; bottom: 14px; left: 18px; right: 18px;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(0,0,0,.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  padding: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.B-floating .pick { font-size: 12px; padding: 5px 9px; background: rgba(0,0,0,.05); border-radius: 6px; cursor: pointer; color: var(--tx2); font-weight: 600; }
+.B-floating input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  font-size: 13.5px; padding: 5px 6px; color: var(--tx1);
+}
+.B-floating .ic {
+  width: 26px; height: 26px; border-radius: 5px;
+  background: rgba(0,0,0,.04); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; cursor: pointer;
+}
+.B-floating .submit {
+  background: var(--orange); color: white; border: 0;
+  padding: 6px 14px; border-radius: 6px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+}
+
+
+/* ════════════════════════════════════════════════
+   风格 C · Sequoia 控制中心 · 分组圆角面板
+   ════════════════════════════════════════════════ */
+
+.C {
+  background: linear-gradient(160deg, #fdf2e3 0%, #f7e8d2 100%);
+  border: 0.5px solid rgba(0,0,0,.12);
+}
+.C .titlebar {
+  background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,235,200,.3));
+  border-bottom: 0.5px solid rgba(0,0,0,.06);
+}
+
+.C-body { padding: 14px; display: grid; grid-template-columns: 1fr 280px; gap: 12px; height: 580px; }
+
+.C-stack { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.C-side  { display: flex; flex-direction: column; gap: 10px; }
+
+/* group panel (Sequoia style) */
+.C-grp {
+  background: rgba(255,255,255,.65); backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(0,0,0,.07);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.C-grp-h {
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 0.5px solid rgba(0,0,0,.06);
+}
+.C-grp-h .t { font-size: 13px; font-weight: 700; color: var(--tx1); }
+.C-grp-h .n { background: var(--orange); color: white; font-size: 10.5px; padding: 1px 8px; border-radius: 999px; font-weight: 700; }
+.C-grp-h .grow { flex: 1; }
+.C-grp-h .more { font-size: 11px; color: var(--orange); font-weight: 600; cursor: pointer; }
+.C-grp-h.late .n { background: var(--red); }
+
+/* row inside group */
+.C-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 0.25px solid rgba(0,0,0,.04);
+  cursor: pointer;
+}
+.C-row:last-child { border-bottom: 0; }
+.C-row:hover { background: rgba(255,140,66,.06); }
+.C-row .check {
+  width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid var(--border-d); background: white;
+  position: relative;
+}
+.C-row .check.done { background: var(--orange); border-color: var(--orange); }
+.C-row .check.done::before {
+  content: "✓"; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 10px; font-weight: 800;
+}
+.C-row .pri-d { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.C-row .pri-d.t0 { background: var(--red); box-shadow: 0 0 0 2px rgba(255,59,48,.2); }
+.C-row .pri-d.t1 { background: var(--orange); box-shadow: 0 0 0 2px rgba(255,140,66,.2); }
+.C-row .pri-d.t2 { background: var(--green); box-shadow: 0 0 0 2px rgba(48,209,88,.2); }
+.C-row .t {
+  flex: 1; font-size: 13px; color: var(--tx1); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.C-row .who {
+  font-size: 10.5px; color: var(--tx2); font-weight: 600;
+  background: rgba(0,0,0,.05); padding: 1px 6px; border-radius: 4px;
+}
+.C-row .when {
+  font-size: 11px; color: var(--tx3); min-width: 60px; text-align: right; font-weight: 500;
+}
+.C-row .when.late { color: var(--red); font-weight: 700; }
+
+/* hero card (compact, no big banner) */
+.C-hero {
+  background: linear-gradient(135deg, rgba(255,140,66,.12), rgba(255,208,130,.08));
+  border: 0.5px solid rgba(255,140,66,.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.C-hero .av { font-size: 28px; }
+.C-hero .meta .d { font-size: 14px; font-weight: 700; color: var(--tx1); }
+.C-hero .meta .s { font-size: 11.5px; color: var(--tx2); margin-top: 1px; }
+.C-hero .grow { flex: 1; }
+.C-hero .pip { text-align: center; padding: 0 8px; }
+.C-hero .pip .v { font-size: 14px; font-weight: 800; color: var(--orange-d); font-variant-numeric: tabular-nums; line-height: 1; }
+.C-hero .pip .l { font-size: 9.5px; color: var(--tx3); margin-top: 2px; font-weight: 600; }
+
+/* widgets in side */
+.C-widget-pad { padding: 12px 14px; }
+.C-bars { display: flex; align-items: flex-end; gap: 4px; height: 50px; padding-bottom: 12px; }
+.C-bars .bar { flex: 1; background: linear-gradient(180deg, #FFD082, var(--orange)); border-radius: 2px 2px 0 0; min-height: 4px; position: relative; }
+.C-bars .bar.today { background: linear-gradient(180deg, #6FCF97, #2E7D6B); }
+.C-bars .bar .l { position: absolute; bottom: -12px; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--tx3); font-weight: 600; }
+
+.C-people-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.C-people-row .av {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), #FFD082);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 10px; font-weight: 700;
+}
+.C-people-row .nm { flex: 1; font-size: 12px; font-weight: 600; color: var(--tx1); }
+.C-people-row .ct { font-size: 11px; color: var(--tx3); }
+
+.C-ring-wrap { display: flex; align-items: center; gap: 12px; }
+.C-ring {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: conic-gradient(var(--orange) 0deg 180deg, rgba(0,0,0,.06) 180deg 360deg);
+  display: flex; align-items: center; justify-content: center;
+}
+.C-ring .inner {
+  width: 44px; height: 44px; border-radius: 50%; background: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: var(--tx1);
+}
+.C-ring-stat { font-size: 11px; color: var(--tx2); line-height: 1.7; }
+
+/* bottom input (Sequoia style — pill at bottom of stack) */
+.C-input-bar {
+  background: rgba(255,255,255,.85); backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(0,0,0,.08);
+  border-radius: 10px; padding: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.C-input-bar .pick { font-size: 11.5px; padding: 5px 8px; background: rgba(0,0,0,.05); border-radius: 6px; cursor: pointer; color: var(--tx2); font-weight: 600; }
+.C-input-bar input { flex: 1; border: 0; outline: 0; background: transparent; font-size: 12.5px; padding: 5px 8px; color: var(--tx1); }
+.C-input-bar .ic { width: 24px; height: 24px; border-radius: 5px; background: rgba(0,0,0,.04); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+.C-input-bar .submit { background: var(--orange); color: white; border: 0; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>UI v5 · 三套真正 macOS App 风格</h1>
+  <p>都用 Style B 暖橘配色作 accent，但整体走 macOS 系统级视觉语言（vibrancy 半透明、灰色边框、原生 titlebar、无大色块 banner）。三套差别在<b> 信息架构</b>，不在配色。</p>
+</div>
+
+
+<div class="row">
+  <div class="tag">A 方案</div>
+  <h2>Apple Notes / Reminders 三栏式</h2>
+  <p class="pitch">最像 macOS 原生 app：左 sidebar (vibrancy) + 中列表 + 右详情。<b>无 hero 大色块</b>，重点选中态用橙。常驻三栏，所有信息都在一屏。</p>
+
+  <div class="win A">
+    <div class="titlebar">
+      <div class="tl"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <div class="tl-title">LazyCat</div>
+    </div>
+    <div class="A-body">
+
+      <div class="A-side">
+        <div class="A-search">搜索 任务 / @人</div>
+
+        <div class="A-side-h">视图</div>
+        <div class="A-nav on"><span class="ico">⏰</span>今天<span class="num">9</span></div>
+        <div class="A-nav"><span class="ico">📅</span>本周<span class="num">14</span></div>
+        <div class="A-nav"><span class="ico">📥</span>全部<span class="num">23</span></div>
+        <div class="A-nav"><span class="ico">✓</span>已完成<span class="num">52</span></div>
+
+        <div class="A-side-h">人</div>
+        <div class="A-nav"><span class="ico">👤</span>len<span class="num">4</span></div>
+        <div class="A-nav"><span class="ico">👤</span>查尔斯<span class="num">1</span></div>
+        <div class="A-nav"><span class="ico">👤</span>jack<span class="num">1</span></div>
+        <div class="A-nav"><span class="ico">👤</span>Max<span class="num">1</span></div>
+
+        <div class="A-side-h">优先级</div>
+        <div class="A-nav"><span class="ico" style="color:var(--red)">●</span>T0 紧急<span class="num">3</span></div>
+        <div class="A-nav"><span class="ico" style="color:var(--orange)">●</span>T1 重要<span class="num">5</span></div>
+        <div class="A-nav"><span class="ico" style="color:var(--green)">●</span>T2 一般<span class="num">3</span></div>
+
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 16px;font-size:11px;color:var(--tx3);background:rgba(0,0,0,.02);border-top:0.5px solid rgba(0,0,0,.06);">
+          🔥 13,168 键 · 4 天 · 50%
+        </div>
+      </div>
+
+      <div class="A-mid">
+        <div class="A-mid-h"><div class="t">今天</div><div class="n">9 个任务</div></div>
+        <div class="A-mid-list">
+          <div class="A-row"><div class="check"></div><div class="pri t0"></div><div class="b"><div class="t">技术方案</div><div class="meta">@len · 21:31</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t1"></div><div class="b"><div class="t">查看 现在上面情况</div><div class="meta">@len · 21:31</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t1"></div><div class="b"><div class="t">88 静态资源 支持 8Max</div><div class="meta">@运营 · 21:31</div></div></div>
+          <div class="A-row on"><div class="check"></div><div class="pri t1"></div><div class="b"><div class="t">BUG 问题描述：用户 KYC...</div><div class="meta">@Devin · 21:31 · 🖼</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t1"></div><div class="b"><div class="t">衍生品 替换 Mysql 到 click-house</div><div class="meta">@jack · 21:31</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t2"></div><div class="b"><div class="t">竞赛结束 但 app UI 还需调整</div><div class="meta">@len · 21:31</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t2"></div><div class="b"><div class="t">股票 延期了</div><div class="meta">@len · 21:31</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t2"></div><div class="b"><div class="t">app_service 用 ipinfo.io 解析 IP</div><div class="meta">@Max · 21:31</div></div></div>
+          <div class="A-row"><div class="check"></div><div class="pri t2"></div><div class="b"><div class="t">空投业务，缺少 extra 字段</div><div class="meta">@查尔斯 · 21:31 · ✍</div></div></div>
+        </div>
+      </div>
+
+      <div class="A-det">
+        <h1>BUG 问题描述：用户 KYC 认证不随等级变化</h1>
+        <div class="who">
+          <span>👤 @Devin</span><span>·</span>
+          <span>创建 2026/05/02 21:31</span>
+          <span style="margin-left:auto;"></span>
+          <span class="pri-pill">🟠 T1</span>
+        </div>
+        <div class="body">
+用户 app 界面 <b>KYC 认证</b>，需要等级描述不随等级名称变化。<br><br>
+当前现象：用户在 app 端看到的 KYC 等级描述会跟着等级名称变。<br>
+预期：等级描述应该独立于等级名称的展示文案。
+        </div>
+
+        <h3>附件</h3>
+        <div class="imgs">
+          <div class="thumb">📐</div>
+          <div class="thumb" style="background: linear-gradient(135deg, #B8E0D2, #6FCF97);">📊</div>
+        </div>
+
+        <h3>属性</h3>
+        <div class="meta-grid">
+          <div class="k">人员</div><div class="v">@Devin</div>
+          <div class="k">优先级</div><div class="v">🟠 T1</div>
+          <div class="k">提醒</div><div class="v" style="color:var(--orange-d)">⏰ 今天 23:00</div>
+          <div class="k">状态</div><div class="v">⚡ 进行中</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="tag">B 方案</div>
+  <h2>Things 3 单栏 · 悬浮输入</h2>
+  <p class="pitch">极简单栏。窗口标题栏融合到内容里（像 Things 3 / Apple Reminders）。<b>底部输入条悬浮</b>（毛玻璃 pill），任务行简洁，星号标优先级。无 sidebar，所有内容靠时间分组组织。</p>
+
+  <div class="win B">
+    <div class="titlebar">
+      <div class="tl"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    </div>
+    <div class="B-head">
+      <div class="star">⭐</div>
+      <h1>今天</h1>
+      <div class="grow"></div>
+      <div class="chip">🔥 <span class="v">13,168</span> 键</div>
+      <div class="chip">📊 <span class="v">9/18</span></div>
+      <div class="chip">📅 <span class="v">4</span> 天</div>
+      <div class="iconbtn">🔍</div>
+      <div class="iconbtn">⋯</div>
+    </div>
+    <div class="B-body">
+
+      <div class="B-section">
+        <div class="B-section-h">
+          <span class="t late">⏰ 即将到期</span><span class="n">2</span>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t0">★</div>
+          <div class="t">技术方案</div>
+          <div class="who">@len</div>
+          <div class="when late">⏰ 22:00</div>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t1">★</div>
+          <div class="t">合约 Mysql 8.4 升级 脚本 bug 检测</div>
+          <div class="who">@jack</div>
+          <div class="when late">⏰ 23:30</div>
+        </div>
+      </div>
+
+      <div class="B-section">
+        <div class="B-section-h">
+          <span class="t">今天</span><span class="n">5</span>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t1">★</div>
+          <div class="t">查看 现在上面情况</div>
+          <div class="who">@len</div>
+          <div class="when">21:31</div>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t1">★</div>
+          <div class="t">88 静态资源 支持 8Max</div>
+          <div class="who">@运营</div>
+          <div class="when">21:31</div>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t1">★</div>
+          <div class="t">BUG 问题描述：用户 KYC 认证</div>
+          <div class="who">@Devin</div>
+          <div class="when">21:31</div>
+          <div class="badges">🖼</div>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t2">★</div>
+          <div class="t">竞赛结束 但 app UI 还需调整</div>
+          <div class="who">@len</div>
+          <div class="when">21:31</div>
+        </div>
+        <div class="B-row done">
+          <div class="check done"></div><div class="star t2">★</div>
+          <div class="t">股票 延期了</div>
+          <div class="who">@len</div>
+          <div class="when">完成</div>
+        </div>
+      </div>
+
+      <div class="B-section">
+        <div class="B-section-h">
+          <span class="t">明天</span><span class="n">3</span>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t1">★</div>
+          <div class="t">衍生品 替换 Mysql 到 click-house</div>
+          <div class="who">@jack</div>
+          <div class="when">10:00</div>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t2">★</div>
+          <div class="t">app_service 用 ipinfo.io 获取地址</div>
+          <div class="who">@Max</div>
+          <div class="when">下午</div>
+        </div>
+        <div class="B-row">
+          <div class="check"></div><div class="star t2">★</div>
+          <div class="t">空投业务，缺少 extra 字段</div>
+          <div class="who">@查尔斯</div>
+          <div class="when">下午</div>
+          <div class="badges">✍</div>
+        </div>
+      </div>
+
+      <!-- floating input -->
+      <div class="B-floating">
+        <div class="pick">👤 len ▾</div>
+        <input value="" placeholder="想到啥就敲进来 · ↵ 添加">
+        <div class="ic">🔥</div>
+        <div class="ic">⏰</div>
+        <div class="ic">🖼</div>
+        <button class="submit">＋ 添加</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="tag">C 方案</div>
+  <h2>Sequoia 控制中心 · 圆角分组面板</h2>
+  <p class="pitch">macOS 15 Sequoia 风：<b>所有内容拆成分组面板</b>（圆角 12pt + vibrancy + 0.5px 边）。Hero 不再大块色，改成扁平 chip。右边 widgets 各成一组。整体像「专注模式」面板那样的细腻分层。</p>
+
+  <div class="win C">
+    <div class="titlebar">
+      <div class="tl"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+      <div class="tl-title">LazyCat</div>
+    </div>
+    <div class="C-body">
+
+      <div class="C-stack">
+
+        <!-- 紧凑 hero card -->
+        <div class="C-hero">
+          <div class="av">🐈</div>
+          <div class="meta">
+            <div class="d">5 月 2 日 · 周六</div>
+            <div class="s">小懒猫 · 停不下来啦 🚀</div>
+          </div>
+          <div class="grow"></div>
+          <div class="pip"><div class="v">13,168</div><div class="l">今日键</div></div>
+          <div class="pip"><div class="v">9/18</div><div class="l">完成</div></div>
+          <div class="pip"><div class="v">50%</div><div class="l">进度</div></div>
+          <div class="pip"><div class="v">4天</div><div class="l">连续</div></div>
+        </div>
+
+        <!-- 今天 group -->
+        <div class="C-grp" style="flex: 1; display: flex; flex-direction: column;">
+          <div class="C-grp-h late"><span class="t">⏰ 今天</span><span class="n">9</span><span class="grow"></span><span class="more">3 即将到期 ›</span></div>
+          <div style="overflow-y: auto; flex: 1;">
+            <div class="C-row"><div class="check"></div><div class="pri-d t0"></div><div class="t">技术方案</div><div class="who">@len</div><div class="when late">⏰ 22:00</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t1"></div><div class="t">查看 现在上面情况</div><div class="who">@len</div><div class="when">21:31</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t1"></div><div class="t">88 静态资源 支持 8Max</div><div class="who">@运营</div><div class="when">21:31</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t1"></div><div class="t">BUG 问题描述：KYC 认证</div><div class="who">@Devin</div><div class="when">21:31</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t1"></div><div class="t">衍生品 替换 Mysql 到 click-house</div><div class="who">@jack</div><div class="when">21:31</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t2"></div><div class="t">竞赛结束 但 app UI 还需调整</div><div class="who">@len</div><div class="when">21:31</div></div>
+            <div class="C-row"><div class="check done"></div><div class="pri-d t2"></div><div class="t" style="text-decoration:line-through;color:var(--tx3);">股票 延期了</div><div class="who">@len</div><div class="when">完成</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t2"></div><div class="t">app_service 用 ipinfo.io 获取地址</div><div class="who">@Max</div><div class="when">21:31</div></div>
+            <div class="C-row"><div class="check"></div><div class="pri-d t2"></div><div class="t">空投业务，缺少 extra 字段</div><div class="who">@查尔斯</div><div class="when">21:31</div></div>
+          </div>
+        </div>
+
+        <!-- 输入条 (sequoia pill) -->
+        <div class="C-input-bar">
+          <div class="pick">👤 len ▾</div>
+          <input placeholder="想到啥就敲进来 · ↵ 添加">
+          <div class="ic">🔥</div>
+          <div class="ic">⏰</div>
+          <div class="ic">🖼</div>
+          <button class="submit">＋ 添加</button>
+        </div>
+      </div>
+
+      <div class="C-side">
+        <!-- widget: 本周打字 -->
+        <div class="C-grp">
+          <div class="C-grp-h"><span class="t">📊 本周打字</span><span class="grow"></span><span class="more">详情 ›</span></div>
+          <div class="C-widget-pad">
+            <div class="C-bars">
+              <div class="bar" style="height: 35%"><div class="l">一</div></div>
+              <div class="bar" style="height: 50%"><div class="l">二</div></div>
+              <div class="bar" style="height: 78%"><div class="l">三</div></div>
+              <div class="bar" style="height: 60%"><div class="l">四</div></div>
+              <div class="bar" style="height: 45%"><div class="l">五</div></div>
+              <div class="bar today" style="height: 88%"><div class="l">今</div></div>
+              <div class="bar" style="opacity:.3;height:30%"><div class="l">日</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- widget: 最常合作 -->
+        <div class="C-grp">
+          <div class="C-grp-h"><span class="t">👥 最常合作</span><span class="grow"></span><span class="more">›</span></div>
+          <div class="C-widget-pad" style="padding: 8px 14px 12px">
+            <div class="C-people-row"><div class="av">l</div><div class="nm">len</div><div class="ct">4</div></div>
+            <div class="C-people-row"><div class="av" style="background: linear-gradient(135deg, #B8E0D2, #6FCF97);">查</div><div class="nm">查尔斯</div><div class="ct">1</div></div>
+            <div class="C-people-row"><div class="av" style="background: linear-gradient(135deg, #FFD082, #FFB780);">j</div><div class="nm">jack</div><div class="ct">1</div></div>
+            <div class="C-people-row"><div class="av" style="background: linear-gradient(135deg, #FFA8B8, #FF8AA0);">运</div><div class="nm">运营</div><div class="ct">1</div></div>
+            <div class="C-people-row"><div class="av" style="background: linear-gradient(135deg, #B0B0FF, #8888FF);">M</div><div class="nm">Max</div><div class="ct">1</div></div>
+          </div>
+        </div>
+
+        <!-- widget: 今日完成度 -->
+        <div class="C-grp">
+          <div class="C-grp-h"><span class="t">🎯 今日完成度</span><span class="grow"></span></div>
+          <div class="C-widget-pad">
+            <div class="C-ring-wrap">
+              <div class="C-ring"><div class="inner">50%</div></div>
+              <div class="C-ring-stat">
+                🔴 T0 &nbsp;3/5<br>
+                🟠 T1 &nbsp;2/6<br>
+                🟢 T2 &nbsp;1/4
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="intro" style="margin-top: 40px">
+  <h1 style="font-size: 16px">挑哪套？</h1>
+  <p>
+    <b>A · Notes 三栏</b> — 最像系统 app（Reminders / Notes / Mail）。但实现复杂度最高，要拆三栏。<br>
+    <b>B · Things 3 单栏</b> — 最简洁、最专注。底部悬浮输入条很灵动。实现中等。<br>
+    <b>C · Sequoia 圆角分组</b> — 最贴合 macOS 15 现行视觉语言。沿用现有架构，只换"卡片样式"成分组面板，最少改动。
+  </p>
+  <p style="margin-top:8px;color:var(--orange-d);font-weight:700">告诉我 A / B / C，我开干。</p>
+</div>
+
+</body>
+</html>

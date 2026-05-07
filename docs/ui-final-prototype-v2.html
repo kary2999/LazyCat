@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · UI v2 · 再压紧</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-page: #fff7ec;
+  --bg-card: #ffffff;
+  --bg-surface: #fff3e0;
+  --bg-soft: #ffefdc;
+  --tx-1: #2c2418;
+  --tx-2: #6b5f48;
+  --tx-3: #a08f6f;
+  --tx-4: #c1ad8a;
+  --accent: #FF8C42;
+  --accent-d: #E0762D;
+  --accent-l: #FFD082;
+  --mint: #2e7d6b;
+  --red: #c0392b;
+  --green: #2e7d32;
+  --border-1: #f5dfb5;
+  --border-2: #e9d4a4;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  background: #ebecef;
+  color: var(--tx-1);
+  -webkit-font-smoothing: antialiased;
+  padding: 28px;
+}
+
+.intro {
+  max-width: 1500px; margin: 0 auto 28px;
+  background: white; border-radius: 14px; padding: 20px 26px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.intro h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -.3px; }
+.intro p { color: var(--tx-2); font-size: 13.5px; line-height: 1.7; }
+.intro b { color: var(--accent); }
+.intro .compare {
+  background: #fff3e0; border-left: 4px solid var(--accent);
+  padding: 10px 14px; margin-top: 10px; border-radius: 6px;
+  color: var(--tx-1); font-size: 12.5px; line-height: 1.7;
+}
+
+.section {
+  max-width: 1500px; margin: 0 auto 32px;
+  background: white;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,.08);
+}
+.section-header {
+  padding: 18px 26px 14px;
+  background: linear-gradient(135deg, #fff3e0, #ffe7c0);
+  border-bottom: 1.5px solid var(--border-1);
+}
+.section-tag {
+  display: inline-block; background: var(--accent); color: white;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
+  padding: 3px 9px; border-radius: 4px; margin-bottom: 6px;
+}
+.section-name { font-size: 19px; font-weight: 800; margin-bottom: 3px; letter-spacing: -.3px; }
+.section-pitch { color: var(--tx-2); font-size: 12.5px; line-height: 1.6; }
+.section-body { padding: 22px; background: var(--bg-page); }
+
+.window {
+  border-radius: 12px;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-1);
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(180,110,30,.14);
+}
+.titlebar {
+  height: 28px; background: var(--bg-soft); border-bottom: 1.5px solid var(--border-1);
+  display: flex; align-items: center; gap: 7px; padding: 0 12px;
+}
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot.r { background: #ff5f57; }
+.dot.y { background: #ffbd2e; }
+.dot.g { background: #28c840; }
+.title-text { flex: 1; text-align: center; font-size: 11.5px; color: var(--tx-2); font-weight: 700; }
+
+
+/* ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃  方案 V5A · 三列 Kanban · 极致压紧 (max-width: 1080)        ┃
+   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
+
+.A-body { background: var(--bg-page); padding: 0; min-height: 540px; }
+.A-content {
+  max-width: 1080px;            /* ★ 从 1280 → 1080 */
+  margin: 0 auto;
+  padding: 10px 12px 12px;
+}
+
+/* Hero —— 单行紧凑（高度 36pt，原来 50pt）*/
+.A-hero {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--accent), #FFB780);
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  color: white;
+  height: 38px;
+}
+.A-hero .av {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.A-hero h1 { font-size: 12.5px; font-weight: 800; letter-spacing: -.1px; }
+.A-hero .sub { font-size: 10px; opacity: .9; font-weight: 600; }
+.A-hero .grow { flex: 1; min-width: 0; overflow: hidden; }
+.A-hero .pip { padding: 0 8px; border-left: 1px solid rgba(255,255,255,.3); text-align: center; }
+.A-hero .pip .v { font-size: 12px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.A-hero .pip .l { font-size: 8.5px; opacity: .9; margin-top: 1px; font-weight: 700; }
+
+/* 主体：Kanban + 右栏（右栏从 240 → 180）*/
+.A-main {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 8px;
+  height: 420px;
+}
+
+.A-board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.A-col {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 8px 6px;
+  display: flex; flex-direction: column;
+  border: 1.5px solid var(--border-1);
+  min-width: 0;
+}
+.A-col-h { display: flex; align-items: center; gap: 5px; padding: 0 5px 6px; border-bottom: 1.5px dashed var(--border-1); margin-bottom: 6px; }
+.A-col-h .ico { font-size: 11px; }
+.A-col-h .name { font-size: 11px; font-weight: 800; color: var(--tx-1); }
+.A-col-h .count { background: var(--bg-surface); color: var(--tx-2); font-size: 9.5px; font-weight: 800; padding: 0 6px; border-radius: 999px; margin-left: auto; line-height: 1.6; }
+.A-cards { flex: 1; overflow-y: auto; padding: 0 3px; }
+
+/* ★ 单行紧凑卡片 —— 高度 24pt，比之前再小 */
+.A-card {
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 4px 6px 4px 5px;
+  margin-bottom: 3px;
+  box-shadow: 0 1px 2px rgba(180,110,30,.07);
+  display: flex; align-items: center; gap: 5px;
+  border-left: 2.5px solid var(--border-2);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.A-card.t0 { border-left-color: var(--red); }
+.A-card.t1 { border-left-color: var(--accent); }
+.A-card.t2 { border-left-color: var(--green); }
+.A-card .check {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  background: white;
+  flex-shrink: 0;
+}
+.A-card .check.done { background: var(--accent); border-color: var(--accent); }
+.A-card .text {
+  flex: 1; min-width: 0;
+  font-size: 11px; font-weight: 600; color: var(--tx-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.A-card .text.done { text-decoration: line-through; color: var(--tx-3); }
+.A-card .meta {
+  font-size: 9px; color: var(--tx-3); font-weight: 700;
+  white-space: nowrap; flex-shrink: 0;
+}
+.A-card .meta .who { color: var(--tx-2); }
+.A-card .meta .late { color: var(--red); font-weight: 800; }
+
+.A-add {
+  background: transparent;
+  border: 1.5px dashed var(--border-2);
+  border-radius: 6px; padding: 4px;
+  font-size: 10px; font-weight: 700; color: var(--tx-3);
+  text-align: center; cursor: pointer; margin-top: 3px;
+}
+.A-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* 右栏 widget —— 字号缩小 */
+.A-right { display: flex; flex-direction: column; gap: 6px; }
+.A-widget {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border-1);
+}
+.A-widget .h { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
+.A-widget .h .nm { font-size: 11px; font-weight: 800; color: var(--tx-1); }
+.A-widget .h .more { font-size: 9.5px; color: var(--accent); font-weight: 700; cursor: pointer; }
+
+.A-bars { display: flex; align-items: flex-end; gap: 3px; height: 50px; padding-bottom: 12px; }
+.A-bars .bar { flex: 1; background: linear-gradient(180deg, var(--accent-l), var(--accent)); border-radius: 2px 2px 0 0; min-height: 4px; position: relative; }
+.A-bars .bar.today { background: linear-gradient(180deg, #6FCF97, var(--mint)); }
+.A-bars .bar .t { position: absolute; bottom: -12px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: var(--tx-3); font-weight: 700; }
+
+.A-people .row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-bottom: 1px dashed var(--border-1); }
+.A-people .row:last-child { border-bottom: 0; }
+.A-people .head { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-l)); display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 800; }
+.A-people .nm { flex: 1; font-size: 10.5px; font-weight: 700; color: var(--tx-1); }
+.A-people .ct { font-size: 9.5px; color: var(--tx-3); font-weight: 700; }
+
+/* 输入条 */
+.A-input {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 6px;
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 8px;
+  border: 1.5px solid var(--border-1);
+}
+.A-input .pick {
+  background: var(--bg-surface); color: var(--tx-1);
+  font-size: 11px; font-weight: 700;
+  padding: 5px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  border: 1.5px solid var(--border-1);
+}
+.A-input .text {
+  flex: 1; padding: 5px 10px;
+  border: 1.5px solid var(--border-1); border-radius: 6px;
+  font-size: 11.5px; outline: none;
+  background: var(--bg-card); color: var(--tx-1);
+}
+.A-input .tb {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--bg-surface);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 12px;
+}
+.A-input .tb.md {
+  width: auto; padding: 0 8px;
+  background: var(--accent-l); color: var(--tx-1);
+  font-weight: 800; font-size: 10.5px; gap: 3px;
+}
+.A-input .submit {
+  background: var(--accent); color: white;
+  padding: 5px 12px; border-radius: 6px;
+  font-weight: 800; font-size: 11px; cursor: pointer; border: 0;
+  box-shadow: 0 3px 8px rgba(255,140,66,.3);
+}
+
+.A-hint {
+  text-align: center;
+  font-size: 9.5px;
+  color: var(--tx-4);
+  padding: 3px 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+
+/* ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃  方案 V5B · 单列时间分组 · 一栏式（max-width: 880）        ┃
+   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
+
+.B-body { background: var(--bg-page); padding: 0; min-height: 540px; }
+.B-content {
+  max-width: 880px;            /* ★ 一栏式 880pt */
+  margin: 0 auto;
+  padding: 10px 12px 12px;
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 10px;
+}
+
+/* 主区（左）*/
+.B-main {
+  background: transparent;
+}
+
+.B-hero {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--accent), #FFB780);
+  border-radius: 10px; padding: 6px 12px;
+  color: white; height: 38px;
+  margin-bottom: 8px;
+}
+.B-hero .av { width: 24px; height: 24px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.B-hero h1 { font-size: 12px; font-weight: 800; }
+.B-hero .sub { font-size: 9.5px; opacity: .92; font-weight: 600; margin-top: 1px; }
+.B-hero .grow { flex: 1; min-width: 0; }
+.B-hero .pip { padding: 0 8px; border-left: 1px solid rgba(255,255,255,.3); text-align: center; }
+.B-hero .pip .v { font-size: 11.5px; font-weight: 800; line-height: 1; }
+.B-hero .pip .l { font-size: 8px; opacity: .9; font-weight: 700; }
+
+.B-tabs { display: flex; gap: 5px; margin-bottom: 6px; padding: 0 2px; }
+.B-tab {
+  background: var(--bg-card); color: var(--tx-2);
+  font-size: 10.5px; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1.5px solid var(--border-1);
+  cursor: pointer;
+}
+.B-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.B-section { margin-bottom: 8px; }
+.B-section-h {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 6px;
+  font-size: 10.5px; font-weight: 800; color: var(--tx-2);
+  letter-spacing: .3px;
+}
+.B-section-h .pill {
+  background: var(--accent); color: white;
+  font-size: 9px; font-weight: 800;
+  padding: 1px 6px; border-radius: 999px;
+}
+.B-section-h .pill.late { background: var(--red); }
+.B-section-h .pill.future { background: var(--tx-3); }
+.B-section-h .grow { flex: 1; }
+
+.B-list { background: var(--bg-card); border-radius: 8px; border: 1.5px solid var(--border-1); padding: 3px; }
+
+/* 单行任务（一行，更紧凑）*/
+.B-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  border-bottom: 1px solid var(--border-1);
+  cursor: pointer;
+  font-size: 11.5px;
+}
+.B-row:last-child { border-bottom: 0; }
+.B-row:hover { background: var(--bg-surface); }
+.B-row .check {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 1.5px solid var(--border-2); background: white;
+  flex-shrink: 0;
+}
+.B-row .check.done { background: var(--accent); border-color: var(--accent); }
+.B-row .pri-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.B-row .pri-dot.t0 { background: var(--red); box-shadow: 0 0 0 2px rgba(192,57,43,.18); }
+.B-row .pri-dot.t1 { background: var(--accent); box-shadow: 0 0 0 2px rgba(255,140,66,.18); }
+.B-row .pri-dot.t2 { background: var(--green); box-shadow: 0 0 0 2px rgba(46,125,50,.18); }
+.B-row .pri-dot.tn { background: var(--tx-4); }
+.B-row .text {
+  flex: 1; min-width: 0;
+  font-size: 11.5px; font-weight: 600; color: var(--tx-1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.B-row .text.done { text-decoration: line-through; color: var(--tx-3); }
+.B-row .who {
+  background: var(--bg-surface); color: var(--tx-2);
+  font-size: 9.5px; font-weight: 700;
+  padding: 0 5px; border-radius: 3px;
+  flex-shrink: 0;
+}
+.B-row .when {
+  font-size: 10px; color: var(--tx-3); font-weight: 700;
+  flex-shrink: 0;
+}
+.B-row .when.late { color: var(--red); font-weight: 800; }
+.B-row .icons { font-size: 9px; opacity: .8; flex-shrink: 0; }
+
+/* 右栏 widget —— 同 V5A */
+.B-right { display: flex; flex-direction: column; gap: 6px; }
+.B-widget {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border-1);
+}
+.B-widget .h { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
+.B-widget .h .nm { font-size: 10.5px; font-weight: 800; color: var(--tx-1); }
+.B-widget .h .more { font-size: 9px; color: var(--accent); font-weight: 700; cursor: pointer; }
+
+.B-bars { display: flex; align-items: flex-end; gap: 2px; height: 50px; padding-bottom: 12px; }
+.B-bars .bar { flex: 1; background: linear-gradient(180deg, var(--accent-l), var(--accent)); border-radius: 2px 2px 0 0; min-height: 4px; position: relative; }
+.B-bars .bar.today { background: linear-gradient(180deg, #6FCF97, var(--mint)); }
+.B-bars .bar .t { position: absolute; bottom: -12px; left: 0; right: 0; text-align: center; font-size: 8px; color: var(--tx-3); font-weight: 700; }
+
+.B-people .row {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 0; border-bottom: 1px dashed var(--border-1);
+}
+.B-people .row:last-child { border-bottom: 0; }
+.B-people .head {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-l));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 9px; font-weight: 800;
+}
+.B-people .nm { flex: 1; font-size: 10px; font-weight: 700; color: var(--tx-1); }
+.B-people .ct { font-size: 9px; color: var(--tx-3); font-weight: 700; }
+
+/* 输入条（底部） */
+.B-input {
+  grid-column: 1 / 3;
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 6px;
+  display: flex; align-items: center; gap: 5px;
+  border: 1.5px solid var(--border-1);
+}
+.B-input .pick { background: var(--bg-surface); color: var(--tx-1); font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; border: 1.5px solid var(--border-1); }
+.B-input .text { flex: 1; padding: 5px 10px; border: 1.5px solid var(--border-1); border-radius: 6px; font-size: 11.5px; outline: none; background: var(--bg-card); color: var(--tx-1); }
+.B-input .tb { width: 26px; height: 26px; border-radius: 6px; background: var(--bg-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; }
+.B-input .tb.md { width: auto; padding: 0 8px; background: var(--accent-l); color: var(--tx-1); font-weight: 800; font-size: 10.5px; }
+.B-input .submit { background: var(--accent); color: white; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer; border: 0; box-shadow: 0 3px 8px rgba(255,140,66,.3); }
+
+.B-hint { text-align: center; font-size: 9.5px; color: var(--tx-4); padding: 3px 0; font-weight: 700; letter-spacing: 1px; }
+
+
+/* 分析 / 备注卡 */
+.compare {
+  margin-top: 12px;
+  background: white;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px; color: var(--tx-1);
+  border: 1.5px dashed var(--border-1);
+  line-height: 1.6;
+}
+.compare h4 { font-size: 11px; font-weight: 800; color: var(--tx-2); margin-bottom: 5px; letter-spacing: .5px; }
+.compare ul { list-style: none; }
+.compare li { padding: 2px 0; }
+.compare li.good::before { content: "✓ "; color: var(--green); font-weight: 800; }
+.compare li.bad::before { content: "✗ "; color: var(--red); font-weight: 800; }
+.compare li.fix::before { content: "★ "; color: var(--accent); font-weight: 800; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>UI v2 · 再压紧 · 两个方向</h1>
+  <p>上一版 max-width: 1280pt 还是太宽 → 这次给两个更紧的选项：</p>
+  <div class="compare">
+    <b>V5A 三列 Kanban · max-width: 1080pt</b>（保留 Kanban，全部尺寸压缩）：Hero 38pt / 卡片 24pt / 右栏 180pt / 字号缩小一档<br>
+    <b>V5B 单列时间分组 · max-width: 880pt</b>（彻底放弃 Kanban，改成时间分组列表）：列表行 22pt / 主区只占 700pt
+  </div>
+</div>
+
+
+<!-- ╔════════════ V5A · 三列再压紧 ════════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">V5A · 三列 Kanban 再压紧</div>
+    <div class="section-name">max-width: 1080 · 卡片 24pt · 右栏 180pt</div>
+    <div class="section-pitch">同样的 Kanban 三列布局，所有元素压缩 20%。一屏能看 14-15 张任务。</div>
+  </div>
+  <div class="section-body">
+    <div class="window">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">LazyCat 🐈</span>
+      </div>
+      <div class="A-body">
+        <div class="A-hint">———— 留白 (max-width: 1080pt) ————</div>
+        <div class="A-content">
+
+          <!-- 紧凑 Hero -->
+          <div class="A-hero">
+            <div class="av">🐈</div>
+            <div class="grow">
+              <h1>5 月 1 日 · 周五</h1>
+              <div class="sub">小懒猫 · 状态在线 💪 · 待办 8 · 完成 7</div>
+            </div>
+            <div class="pip"><div class="v">11,616</div><div class="l">今日键</div></div>
+            <div class="pip"><div class="v">3 / 7</div><div class="l">完成</div></div>
+            <div class="pip"><div class="v">42%</div><div class="l">进度</div></div>
+            <div class="pip"><div class="v">8 天</div><div class="l">连续</div></div>
+          </div>
+
+          <div class="A-main">
+            <div class="A-board">
+
+              <div class="A-col">
+                <div class="A-col-h"><span class="ico">📥</span><span class="name">待办</span><span class="count">8</span></div>
+                <div class="A-cards">
+                  <div class="A-card t0"><div class="check"></div><div class="text">技术方案 撮合域 仓位/委托结构</div><div class="meta"><span class="who">@flex</span> 17:01</div></div>
+                  <div class="A-card t1"><div class="check"></div><div class="text">🐛 BUG KYC 认证…</div><div class="meta"><span class="who">@flex</span> 16:31</div></div>
+                  <div class="A-card t1"><div class="check"></div><div class="text">88 静态资源 支持 8Max</div><div class="meta"><span class="who">@运营</span> 16:31</div></div>
+                  <div class="A-card t1"><div class="check"></div><div class="text">衍生品 替换 Mysql 到 click-house</div><div class="meta"><span class="who">@jack</span> 16:31</div></div>
+                  <div class="A-card t2"><div class="check"></div><div class="text">股票 延期了</div><div class="meta"><span class="who">@flex</span> 15:54</div></div>
+                  <div class="A-card t2"><div class="check"></div><div class="text">app_service IP 解析 ipinfo.io</div><div class="meta"><span class="who">@flex</span> 15:54</div></div>
+                  <div class="A-card t2"><div class="check"></div><div class="text">空投业务 缺少 extra 字段</div><div class="meta"><span class="who">@flex</span> 15:54</div></div>
+                  <div class="A-card t2"><div class="check"></div><div class="text">/V4/UCenter/safetyVerifyMobile</div><div class="meta"><span class="who">@flex</span> 15:54</div></div>
+                </div>
+                <div class="A-add">＋ 添加</div>
+              </div>
+
+              <div class="A-col">
+                <div class="A-col-h"><span class="ico">⚡</span><span class="name">进行中</span><span class="count">2</span></div>
+                <div class="A-cards">
+                  <div class="A-card t0"><div class="check"></div><div class="text">技术方案 撮合域 设计</div><div class="meta"><span class="late">⏰ 18:00</span></div></div>
+                  <div class="A-card t1"><div class="check"></div><div class="text">合约 Mysql 8.4 升级 bug 检测</div><div class="meta"><span class="late">⏰ 16:00</span></div></div>
+                </div>
+                <div class="A-add">＋ 添加</div>
+              </div>
+
+              <div class="A-col">
+                <div class="A-col-h"><span class="ico">✅</span><span class="name">已完成</span><span class="count">7</span></div>
+                <div class="A-cards">
+                  <div class="A-card t1"><div class="check done"></div><div class="text done">app/Service Mysql 8.4 升级</div><div class="meta">16:31</div></div>
+                  <div class="A-card t2"><div class="check done"></div><div class="text done">埋点 数据库选择器</div><div class="meta">16:31</div></div>
+                  <div class="A-card t2"><div class="check done"></div><div class="text done">Hostlift business_type 1→2</div><div class="meta">16:31</div></div>
+                  <div class="A-card t2"><div class="check done"></div><div class="text done">海外动态盘 ngnix 配置</div><div class="meta">16:31</div></div>
+                  <div class="A-card t2"><div class="check done"></div><div class="text done">user_vip_level 等级数据</div><div class="meta">16:31</div></div>
+                  <div class="A-card t2"><div class="check done"></div><div class="text done">取消订单下单失败</div><div class="meta">16:31</div></div>
+                  <div class="A-card t2"><div class="check done"></div><div class="text done">最后服务 Mysql 8.4 升级</div><div class="meta">16:31</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右栏 widget -->
+            <div class="A-right">
+              <div class="A-widget">
+                <div class="h"><div class="nm">📊 本周打字</div><div class="more">详情 ›</div></div>
+                <div class="A-bars">
+                  <div class="bar" style="height: 50%"><div class="t">一</div></div>
+                  <div class="bar" style="height: 65%"><div class="t">二</div></div>
+                  <div class="bar" style="height: 78%"><div class="t">三</div></div>
+                  <div class="bar" style="height: 60%"><div class="t">四</div></div>
+                  <div class="bar today" style="height: 90%"><div class="t">今</div></div>
+                  <div class="bar" style="opacity: .3; height: 30%"><div class="t">六</div></div>
+                  <div class="bar" style="opacity: .3; height: 30%"><div class="t">日</div></div>
+                </div>
+              </div>
+              <div class="A-widget">
+                <div class="h"><div class="nm">👥 最常合作</div><div class="more">查看 ›</div></div>
+                <div class="A-people">
+                  <div class="row"><div class="head">f</div><div class="nm">flex</div><div class="ct">8</div></div>
+                  <div class="row"><div class="head" style="background: linear-gradient(135deg, #B8E0D2, #6FCF97);">l</div><div class="nm">len</div><div class="ct">2</div></div>
+                  <div class="row"><div class="head" style="background: linear-gradient(135deg, #FFA8B8, #FF8AA0);">j</div><div class="nm">jack</div><div class="ct">1</div></div>
+                  <div class="row"><div class="head" style="background: linear-gradient(135deg, #FFD082, #FFB780);">运</div><div class="nm">运营</div><div class="ct">1</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 输入条 -->
+          <div class="A-input">
+            <div class="pick">👤 flex ▾</div>
+            <input class="text" placeholder="想到啥就敲进来 · ↵ 添加">
+            <div class="tb">🔥</div>
+            <div class="tb">🕒</div>
+            <div class="tb">🖼</div>
+            <div class="tb md">✍️ 长文</div>
+            <button class="submit">＋ 添加</button>
+          </div>
+        </div>
+        <div class="A-hint">———— 留白 (max-width: 1080pt) ————</div>
+      </div>
+    </div>
+
+    <div class="compare">
+      <h4>V5A 关键变化</h4>
+      <ul>
+        <li class="fix">max-width: 1280 → 1080pt（窄了 200pt）</li>
+        <li class="fix">Hero 高度: 56 → 38pt</li>
+        <li class="fix">卡片高度: 40 → 24pt（单行）</li>
+        <li class="fix">右栏宽度: 240 → 180pt</li>
+        <li class="fix">字号统一缩 1px：标题 12 / 正文 11 / meta 9</li>
+        <li class="good">改动较小，沿用上一版的 Kanban 三列结构</li>
+        <li class="bad">中等屏（1080-1440）效果一般</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔════════════ V5B · 单列时间分组 ════════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">V5B · 单列 · 时间分组</div>
+    <div class="section-name">max-width: 880 · 时间分组列表 + 右栏 widget</div>
+    <div class="section-pitch">放弃 Kanban 三列，改成单列按时间分组。每行 22pt，密度最高。整个内容只占 880pt。</div>
+  </div>
+  <div class="section-body">
+    <div class="window">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">LazyCat 🐈</span>
+      </div>
+      <div class="B-body">
+        <div class="B-hint">———— 留白 (max-width: 880pt) ————</div>
+        <div class="B-content">
+
+          <!-- 主区 -->
+          <div class="B-main">
+            <div class="B-hero">
+              <div class="av">🐈</div>
+              <div class="grow">
+                <h1>5 月 1 日 · 周五</h1>
+                <div class="sub">小懒猫 · 状态在线 💪</div>
+              </div>
+              <div class="pip"><div class="v">11,616</div><div class="l">今日键</div></div>
+              <div class="pip"><div class="v">3/7</div><div class="l">完成</div></div>
+              <div class="pip"><div class="v">42%</div><div class="l">进度</div></div>
+            </div>
+
+            <div class="B-tabs">
+              <span class="B-tab active">⭐ 进行中 (10)</span>
+              <span class="B-tab">✅ 完成 (7)</span>
+              <span class="B-tab">📋 全部</span>
+            </div>
+
+            <!-- 今天 -->
+            <div class="B-section">
+              <div class="B-section-h">
+                <span>⏰ 今天</span>
+                <span class="pill late">2 即将到期</span>
+              </div>
+              <div class="B-list">
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t0"></div>
+                  <div class="text">技术方案 撮合域 仓位/委托设计</div>
+                  <span class="who">@flex</span>
+                  <span class="when late">⏰ 18:00</span>
+                  <span class="icons">✍️🖼</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t1"></div>
+                  <div class="text">合约 Mysql 8.4 升级 脚本 bug 检测</div>
+                  <span class="who">@len</span>
+                  <span class="when late">⏰ 16:00</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t1"></div>
+                  <div class="text">88 静态资源 支持 8Max</div>
+                  <span class="who">@运营</span>
+                  <span class="when">今天</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 明天 -->
+            <div class="B-section">
+              <div class="B-section-h">
+                <span>📅 明天</span>
+                <span class="pill future">2</span>
+              </div>
+              <div class="B-list">
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t1"></div>
+                  <div class="text">衍生品 替换 Mysql 到 click-house</div>
+                  <span class="who">@jack</span>
+                  <span class="when">10:00</span>
+                  <span class="icons">📐</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t2"></div>
+                  <div class="text">app_service 用户 IP 用 ipinfo.io 解析</div>
+                  <span class="who">@flex</span>
+                  <span class="when">下午</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 本周 -->
+            <div class="B-section">
+              <div class="B-section-h">
+                <span>🔥 本周</span>
+                <span class="pill future">5</span>
+              </div>
+              <div class="B-list">
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t1"></div>
+                  <div class="text">空投业务 缺少 extra 字段</div>
+                  <span class="who">@flex</span>
+                  <span class="when">5/3</span>
+                  <span class="icons">✍️</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t2"></div>
+                  <div class="text">/V4/UCenter/User/safetyVerifyMobile</div>
+                  <span class="who">@flex</span>
+                  <span class="when">5/3</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t2"></div>
+                  <div class="text">股票 延期了</div>
+                  <span class="who">@flex</span>
+                  <span class="when">本周</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot t2"></div>
+                  <div class="text">🐛 BUG 用户 app KYC 认证…</div>
+                  <span class="who">@flex</span>
+                  <span class="when">本周</span>
+                </div>
+                <div class="B-row">
+                  <div class="check"></div>
+                  <div class="pri-dot tn"></div>
+                  <div class="text">写 v1.7.27 release notes</div>
+                  <span class="who">@自己</span>
+                  <span class="when">本周</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右栏 widget -->
+          <div class="B-right">
+            <div class="B-widget">
+              <div class="h"><div class="nm">📊 本周打字</div><div class="more">详情 ›</div></div>
+              <div class="B-bars">
+                <div class="bar" style="height: 50%"><div class="t">一</div></div>
+                <div class="bar" style="height: 65%"><div class="t">二</div></div>
+                <div class="bar" style="height: 78%"><div class="t">三</div></div>
+                <div class="bar" style="height: 60%"><div class="t">四</div></div>
+                <div class="bar today" style="height: 90%"><div class="t">今</div></div>
+                <div class="bar" style="opacity: .3; height: 30%"><div class="t">六</div></div>
+                <div class="bar" style="opacity: .3; height: 30%"><div class="t">日</div></div>
+              </div>
+            </div>
+            <div class="B-widget">
+              <div class="h"><div class="nm">👥 最常合作</div><div class="more">查看 ›</div></div>
+              <div class="B-people">
+                <div class="row"><div class="head">f</div><div class="nm">flex</div><div class="ct">8</div></div>
+                <div class="row"><div class="head" style="background: linear-gradient(135deg, #B8E0D2, #6FCF97);">l</div><div class="nm">len</div><div class="ct">2</div></div>
+                <div class="row"><div class="head" style="background: linear-gradient(135deg, #FFA8B8, #FF8AA0);">j</div><div class="nm">jack</div><div class="ct">1</div></div>
+                <div class="row"><div class="head" style="background: linear-gradient(135deg, #FFD082, #FFB780);">运</div><div class="nm">运营</div><div class="ct">1</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 底部输入条 -->
+          <div class="B-input">
+            <div class="pick">👤 flex ▾</div>
+            <input class="text" placeholder="想到啥就敲进来 · ↵ 添加">
+            <div class="tb">🔥</div>
+            <div class="tb">🕒</div>
+            <div class="tb">🖼</div>
+            <div class="tb md">✍️ 长文</div>
+            <button class="submit">＋ 添加</button>
+          </div>
+        </div>
+        <div class="B-hint">———— 留白 (max-width: 880pt) ————</div>
+      </div>
+    </div>
+
+    <div class="compare">
+      <h4>V5B 关键变化</h4>
+      <ul>
+        <li class="fix">放弃三列 Kanban → 单列时间分组（今天 / 明天 / 本周 / 已完成）</li>
+        <li class="fix">max-width: 880pt（最紧）</li>
+        <li class="fix">每行 22pt 单行显示，密度最高 — 一屏能看 22-25 个任务</li>
+        <li class="fix">tab 切换：进行中 / 完成 / 全部</li>
+        <li class="good">空间利用率最高，不会"撑得空"</li>
+        <li class="good">符合"今天 / 明天 / 本周"心智 — 拿来就能看到要做啥</li>
+        <li class="bad">没有 "进行中" 的视觉强调（要靠 ⏰ 即将到期 红 pill 标识）</li>
+        <li class="bad">改动比 V5A 大 — 要重写 ContentViewController 不再用 Kanban</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<div class="intro" style="margin-top: 28px">
+  <h1 style="font-size: 17px">挑哪个？</h1>
+  <p><b>V5A · 三列再压紧</b> — 想保留 Kanban 视觉，最小改动</p>
+  <p><b>V5B · 单列时间分组</b> — 想要最紧凑、最高密度，重写一遍但更舒服</p>
+  <p style="margin-top: 8px; color: var(--accent); font-weight: 700;">告诉我 V5A / V5B / 还要继续压（可以更小）</p>
+</div>
+
+</body>
+</html>

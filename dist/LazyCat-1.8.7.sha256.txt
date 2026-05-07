@@ -1,0 +1,3 @@
+7cb61bfe6d14730f51955be1168fa1c1f4e47823ae058cf671b1b69ba73a8c3a  LazyCat-1.8.7.zip
+de00a985f4302fd1d4fa60e1e5ef38df6cf8a4ea93a5cf4e579d7dcb59a1a7f8  LazyCat-1.8.7.tar.gz
+6798c917a5ce7f145d5e5628b82b4fcb26c656fd5af4825875bac9f3dcebc7ba  LazyCat-1.8.7.dmg

@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · UI 总规范 + 完整界面原型</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  /* 背景层（4 层，对比度递减）*/
+  --bg-page: #fff7ec;        /* 窗口最外层 奶油 */
+  --bg-card: #ffffff;        /* 任务卡 / 编辑器 / detail 内容区 */
+  --bg-surface: #fff3e0;     /* 输入框 / chip / button-secondary */
+  --bg-soft: #ffefdc;        /* 标题栏 / sidebar */
+
+  /* 文字（4 层）*/
+  --tx-1: #2c2418;           /* 主文字（最深，跟白底反差最大）*/
+  --tx-2: #6b5f48;           /* 副文字 / 标签 */
+  --tx-3: #a08f6f;           /* 弱文字 / 时间戳 */
+  --tx-4: #c1ad8a;           /* 占位符 / 禁用 */
+
+  /* 强调色 */
+  --accent: #FF8C42;         /* 暖橙主色 */
+  --accent-d: #E0762D;       /* 深橙（hover）*/
+  --accent-l: #FFD082;       /* 黄油辅 */
+  --mint: #2e7d6b;           /* 薄荷 - 完成 / 今日柱 */
+  --red: #c0392b;            /* 危险 - 删除 / T0 */
+  --green: #2e7d32;          /* T2 / 成功 */
+
+  /* 边框 */
+  --border-1: #f5dfb5;       /* 主边框（暖米）*/
+  --border-2: #e9d4a4;       /* 加粗边框 */
+
+  /* 阴影 */
+  --shadow-sm: 0 2px 4px rgba(180,110,30,.08);
+  --shadow-md: 0 4px 12px rgba(180,110,30,.12);
+  --shadow-lg: 0 12px 32px rgba(180,110,30,.16);
+  --shadow-accent: 0 4px 10px rgba(255,140,66,.30);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  background: #ebecef;
+  color: var(--tx-1);
+  -webkit-font-smoothing: antialiased;
+  padding: 28px;
+}
+
+/* ╔═══ 标题区 ═══╗ */
+.intro {
+  max-width: 1500px; margin: 0 auto 28px;
+  background: white; border-radius: 14px; padding: 22px 28px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.intro h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -.3px; }
+.intro p { color: var(--tx-2); font-size: 14px; line-height: 1.7; }
+.intro .pain { background: #fee; border-left: 4px solid var(--red); padding: 10px 14px; margin-top: 12px; border-radius: 6px; color: #802; font-size: 13px; line-height: 1.6; }
+.intro .pain b { color: var(--red); }
+.intro .fix { background: #efe; border-left: 4px solid var(--green); padding: 10px 14px; margin-top: 8px; border-radius: 6px; color: #142; font-size: 13px; line-height: 1.6; }
+
+/* ╔═══ 设计 token 展示 ═══╗ */
+.section {
+  max-width: 1500px; margin: 0 auto 36px;
+  background: white;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,.08);
+}
+.section-header {
+  padding: 20px 28px 16px;
+  background: linear-gradient(135deg, #fff3e0, #ffe7c0);
+  border-bottom: 1.5px solid var(--border-1);
+}
+.section-tag {
+  display: inline-block; background: var(--accent); color: white;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+  padding: 4px 10px; border-radius: 4px; margin-bottom: 8px;
+}
+.section-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; letter-spacing: -.3px; }
+.section-pitch { color: var(--tx-2); font-size: 13px; line-height: 1.6; }
+.section-body { padding: 26px; background: var(--bg-page); }
+
+/* === Tokens 表格 === */
+.tokens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.token-group { background: white; border-radius: 12px; padding: 14px; border: 1.5px solid var(--border-1); }
+.token-group h4 { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; color: var(--tx-2); }
+.token-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; }
+.token-row .swatch { width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border-1); flex-shrink: 0; }
+.token-row code { font-family: "SF Mono", Menlo, monospace; font-size: 11px; color: var(--tx-2); }
+.token-row .nm { font-weight: 700; min-width: 70px; }
+
+/* === 按钮规范 === */
+.btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.btn-row { background: white; border-radius: 12px; padding: 14px; border: 1.5px solid var(--border-1); }
+.btn-row h4 { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; color: var(--tx-2); }
+.btn-row .demo { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn-row .note { font-size: 11px; color: var(--tx-3); margin-top: 8px; line-height: 1.5; }
+
+/* 实际按钮样式（必须明确 bg + color，禁止依赖系统色）*/
+.btn-primary {
+  background: var(--accent); color: white;
+  font-size: 13px; font-weight: 700;
+  padding: 8px 16px; border-radius: 8px;
+  border: 0; cursor: pointer;
+  box-shadow: var(--shadow-accent);
+}
+.btn-primary:hover { background: var(--accent-d); }
+.btn-secondary {
+  background: white; color: var(--tx-1);
+  font-size: 13px; font-weight: 700;
+  padding: 7px 16px; border-radius: 8px;
+  border: 1.5px solid var(--border-2); cursor: pointer;
+}
+.btn-secondary:hover { background: var(--bg-surface); border-color: var(--accent); color: var(--accent); }
+.btn-tertiary {
+  background: transparent; color: var(--accent);
+  font-size: 13px; font-weight: 700;
+  padding: 7px 12px; border-radius: 6px; border: 0; cursor: pointer;
+}
+.btn-tertiary:hover { background: var(--bg-surface); }
+.btn-danger {
+  background: var(--red); color: white;
+  font-size: 13px; font-weight: 700;
+  padding: 8px 16px; border-radius: 8px;
+  border: 0; cursor: pointer;
+}
+.btn-danger-ghost {
+  background: white; color: var(--red);
+  font-size: 13px; font-weight: 700;
+  padding: 7px 16px; border-radius: 8px;
+  border: 1.5px solid var(--red); cursor: pointer;
+}
+.btn-icon {
+  width: 32px; height: 32px;
+  background: var(--bg-surface); color: var(--tx-2);
+  border-radius: 8px; border: 0; cursor: pointer;
+  font-size: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-icon:hover { background: var(--accent-l); color: var(--tx-1); }
+.btn-icon.active { background: var(--accent); color: white; }
+.btn-chip {
+  background: var(--bg-surface); color: var(--tx-2);
+  font-size: 11.5px; font-weight: 700;
+  padding: 5px 12px; border-radius: 999px;
+  border: 1.5px solid transparent; cursor: pointer;
+}
+.btn-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-chip:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+/* === 通用窗口 chrome === */
+.window {
+  border-radius: 14px;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-1);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+.titlebar {
+  height: 32px; background: var(--bg-soft); border-bottom: 1.5px solid var(--border-1);
+  display: flex; align-items: center; gap: 8px; padding: 0 14px;
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; }
+.dot.y { background: #ffbd2e; }
+.dot.g { background: #28c840; }
+.title-text { flex: 1; text-align: center; font-size: 12px; color: var(--tx-2); font-weight: 700; }
+
+/* ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃  1. 主窗口 · 居中限宽 1280pt + 紧凑卡片            ┃
+   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
+
+.M-body { background: var(--bg-page); padding: 0; min-height: 600px; }
+.M-content { max-width: 1280px; margin: 0 auto; padding: 14px 16px 16px; }
+
+.M-hero {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, var(--accent), #FFB780);
+  border-radius: 14px; padding: 9px 16px; margin-bottom: 10px;
+  color: white;
+}
+.M-hero .av { width: 32px; height: 32px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.M-hero .grow { flex: 1; }
+.M-hero h1 { font-size: 14px; font-weight: 800; line-height: 1; }
+.M-hero .sub { font-size: 11px; margin-top: 3px; opacity: .92; font-weight: 600; }
+.M-hero .pip { padding: 0 12px; border-left: 1px solid rgba(255,255,255,.3); text-align: center; }
+.M-hero .pip .v { font-size: 14px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.M-hero .pip .l { font-size: 9.5px; opacity: .9; margin-top: 2px; font-weight: 700; letter-spacing: .3px; }
+
+.M-main { display: grid; grid-template-columns: 1fr 240px; gap: 10px; height: 470px; }
+
+/* Kanban */
+.M-board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.M-col {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 10px 8px;
+  display: flex; flex-direction: column;
+  border: 1.5px solid var(--border-1);
+  min-width: 0;
+}
+.M-col-h { display: flex; align-items: center; gap: 6px; padding: 2px 6px 8px; border-bottom: 1.5px dashed var(--border-1); margin-bottom: 8px; }
+.M-col-h .ico { font-size: 13px; }
+.M-col-h .name { font-size: 12px; font-weight: 800; color: var(--tx-1); }
+.M-col-h .count { background: var(--bg-surface); color: var(--tx-2); font-size: 10.5px; font-weight: 800; padding: 1px 8px; border-radius: 999px; margin-left: auto; }
+
+.M-cards { flex: 1; overflow-y: auto; padding: 0 4px; }
+
+/* ★ 紧凑任务卡 —— 每行明确 layout，无 bug */
+.M-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 7px 10px 7px 8px;
+  margin-bottom: 5px;
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: flex-start; gap: 8px;
+  border-left: 3px solid var(--border-2);
+  cursor: grab;
+}
+.M-card.t0 { border-left-color: var(--red); }
+.M-card.t1 { border-left-color: var(--accent); }
+.M-card.t2 { border-left-color: var(--green); }
+
+.M-card .check {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  flex-shrink: 0; margin-top: 2px;
+  background: white;
+  cursor: pointer;
+}
+.M-card .check:hover { border-color: var(--accent); }
+.M-card .check.done { background: var(--accent); border-color: var(--accent); }
+.M-card .check.done::before {
+  content: "✓"; color: white; font-size: 10px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; height: 100%;
+}
+
+.M-card .body { flex: 1; min-width: 0; }
+.M-card .text {
+  font-size: 12px; font-weight: 600; color: var(--tx-1);
+  line-height: 1.4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.M-card .text.done { text-decoration: line-through; color: var(--tx-3); }
+.M-card .meta {
+  font-size: 10px; color: var(--tx-3); font-weight: 700;
+  margin-top: 2px;
+  display: flex; gap: 6px; align-items: center;
+  white-space: nowrap; overflow: hidden;
+}
+.M-card .meta .who { background: var(--bg-surface); color: var(--tx-2); padding: 0 5px; border-radius: 3px; font-weight: 700; }
+.M-card .meta .when.late { color: var(--red); font-weight: 800; }
+
+.M-add {
+  background: transparent;
+  border: 1.5px dashed var(--border-2);
+  border-radius: 8px; padding: 6px;
+  font-size: 11px; font-weight: 700; color: var(--tx-3);
+  text-align: center; cursor: pointer; margin-top: 4px;
+}
+.M-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* 右栏 widget */
+.M-right { display: flex; flex-direction: column; gap: 8px; }
+.M-widget { background: var(--bg-card); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow-sm); border: 1.5px solid var(--border-1); }
+.M-widget .h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.M-widget .h .nm { font-size: 12px; font-weight: 800; color: var(--tx-1); }
+.M-widget .h .more { font-size: 10px; color: var(--accent); font-weight: 700; cursor: pointer; }
+
+.M-bars { display: flex; align-items: flex-end; gap: 3px; height: 64px; padding-bottom: 14px; }
+.M-bars .bar { flex: 1; background: linear-gradient(180deg, var(--accent-l), var(--accent)); border-radius: 3px 3px 0 0; min-height: 4px; position: relative; }
+.M-bars .bar.today { background: linear-gradient(180deg, #6FCF97, var(--mint)); }
+.M-bars .bar .t { position: absolute; bottom: -14px; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--tx-3); font-weight: 700; }
+
+.M-people .row { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed var(--border-1); }
+.M-people .row:last-child { border-bottom: 0; }
+.M-people .head { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-l)); display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 800; }
+.M-people .nm { flex: 1; font-size: 11.5px; font-weight: 700; color: var(--tx-1); }
+.M-people .ct { font-size: 10.5px; color: var(--tx-3); font-weight: 700; }
+
+/* 输入条 */
+.M-input {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 10px;
+  box-shadow: var(--shadow-md);
+  border: 1.5px solid var(--border-1);
+}
+.M-input .pick {
+  background: var(--bg-surface); color: var(--tx-1);
+  font-size: 12px; font-weight: 700;
+  padding: 7px 10px; border-radius: 7px; cursor: pointer; white-space: nowrap;
+  border: 1.5px solid var(--border-1);
+}
+.M-input .text {
+  flex: 1; padding: 7px 12px;
+  border: 1.5px solid var(--border-1); border-radius: 7px;
+  font-size: 12.5px; outline: none;
+  background: var(--bg-card); color: var(--tx-1);
+}
+.M-input .text::placeholder { color: var(--tx-4); }
+.M-input .text:focus { border-color: var(--accent); }
+
+.M-margin-hint {
+  text-align: center;
+  font-size: 10px;
+  color: var(--tx-4);
+  padding: 6px 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃  2. 详情窗口 · TaskDetailController                ┃
+   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
+
+.D-body { background: var(--bg-page); padding: 18px 20px; min-height: 460px; }
+
+.D-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.D-meta .who-pill {
+  background: var(--bg-surface); color: var(--tx-1);
+  font-size: 12px; font-weight: 700;
+  padding: 6px 10px; border-radius: 6px;
+  border: 1.5px solid var(--border-1); cursor: pointer;
+}
+.D-meta .time { font-size: 12px; color: var(--tx-3); font-weight: 700; }
+.D-meta .grow { flex: 1; }
+.D-meta .pri-chip {
+  font-size: 11px; font-weight: 800;
+  padding: 4px 12px; border-radius: 8px;
+  border: 1.5px solid var(--green);
+  background: white; color: var(--green);
+}
+.D-meta .status-chip {
+  font-size: 11px; font-weight: 800;
+  padding: 5px 14px; border-radius: 8px;
+  background: var(--accent); color: white;
+  box-shadow: var(--shadow-accent);
+}
+
+/* 正文：白底深色字（不再黑底白字！）*/
+.D-text {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-1);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--tx-1);              /* ★ 跟白底强对比 */
+  line-height: 1.7;
+  height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  margin-bottom: 12px;
+}
+.D-text .keyword { color: #b75e00; font-weight: 700; }
+.D-text .string { color: var(--green); }
+.D-text .number { color: #1a73e8; }
+
+/* 工具行 */
+.D-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.D-tools .tool-btn {
+  background: var(--bg-card); color: var(--tx-1);
+  font-size: 12px; font-weight: 700;
+  padding: 7px 12px; border-radius: 8px;
+  border: 1.5px solid var(--border-1);
+  cursor: pointer;
+}
+.D-tools .tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+.D-tools .tool-btn.active {
+  background: var(--accent); color: white; border-color: var(--accent);
+}
+.D-tools .note-input {
+  flex: 1;
+  padding: 7px 12px;
+  border: 1.5px solid var(--border-1); border-radius: 8px;
+  font-size: 12px; outline: none;
+  background: var(--bg-card); color: var(--tx-1);
+}
+.D-tools .note-input::placeholder { color: var(--tx-4); }
+
+/* 底部按钮 —— 三种明确风格 */
+.D-foot {
+  display: flex; gap: 10px; align-items: center;
+  padding-top: 12px;
+  border-top: 1.5px dashed var(--border-1);
+}
+
+/* ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃  3. Markdown 编辑器（重新规整按钮 / 对比度）       ┃
+   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
+
+.E-body { background: var(--bg-page); padding: 18px 20px; min-height: 580px; }
+
+.E-meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.E-title-input {
+  flex: 1; background: var(--bg-card); color: var(--tx-1);
+  font-size: 14px; font-weight: 700;
+  padding: 8px 14px; border: 1.5px solid var(--border-1); border-radius: 8px; outline: none;
+}
+.E-title-input::placeholder { color: var(--tx-4); }
+
+.E-meta-row .pick { background: var(--bg-surface); color: var(--tx-1); padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border-1); white-space: nowrap; }
+.E-meta-row .pri-pick {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--bg-surface); padding: 5px 10px; border-radius: 8px;
+  border: 1.5px solid var(--border-1);
+}
+.E-meta-row .pri-pick .lbl { font-size: 11px; color: var(--tx-2); font-weight: 700; margin-right: 4px; }
+.E-meta-row .pri-pick .pd { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; }
+.E-meta-row .pri-pick .pd.t0 { background: #ffd9da; }
+.E-meta-row .pri-pick .pd.t1 { background: var(--accent); box-shadow: 0 0 0 2px white, 0 0 0 3px var(--accent); }
+.E-meta-row .pri-pick .pd.t2 { background: #d5ecdc; }
+
+/* 工具栏 */
+.E-toolbar {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-1);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 6px 8px;
+}
+.E-tb {
+  width: 30px; height: 28px;
+  background: transparent; color: var(--tx-1);
+  border: 0; border-radius: 6px;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.E-tb:hover { background: var(--bg-surface); color: var(--accent); }
+.E-tb.bold { font-weight: 800; }
+.E-tb.italic { font-style: italic; }
+.E-tb.strike { text-decoration: line-through; }
+.E-toolbar .sep { width: 1px; height: 16px; background: var(--border-1); margin: 0 4px; }
+.E-toolbar .grow { flex: 1; }
+.E-view-toggle { display: flex; gap: 1px; background: var(--bg-surface); border-radius: 6px; padding: 2px; }
+.E-view-toggle .opt {
+  padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--tx-2);
+  border-radius: 4px; cursor: pointer; border: 0; background: transparent;
+}
+.E-view-toggle .opt.active { background: white; color: var(--accent); box-shadow: 0 1px 3px rgba(180,110,30,.15); }
+
+/* 编辑 + 预览（白底深字 必须）*/
+.E-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-1);
+  border-radius: 0 0 8px 8px;
+  border-top: none;
+  min-height: 280px;
+}
+.E-edit, .E-preview { padding: 14px 16px; font-size: 13px; color: var(--tx-1); overflow-y: auto; }
+.E-edit { border-right: 1.5px dashed var(--border-1); font-family: "SF Mono", Menlo, monospace; line-height: 1.7; white-space: pre-wrap; }
+.E-edit .h { color: #b75e00; font-weight: 800; }
+.E-edit .em { color: #b75e00; }
+.E-edit .code { color: var(--green); background: var(--bg-surface); padding: 1px 4px; border-radius: 3px; }
+.E-edit .link { color: #1a73e8; }
+.E-preview { font-family: -apple-system, "PingFang SC", sans-serif; line-height: 1.7; }
+.E-preview h1 { font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--tx-1); }
+.E-preview h2 { font-size: 15px; font-weight: 800; margin-top: 12px; margin-bottom: 6px; color: var(--tx-1); }
+.E-preview p { margin-bottom: 8px; font-size: 13px; color: var(--tx-1); }
+.E-preview ul { margin-left: 20px; margin-bottom: 8px; }
+.E-preview li { font-size: 13px; margin-bottom: 4px; color: var(--tx-1); }
+.E-preview code { background: var(--bg-surface); color: #b75e00; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+/* 附件区 */
+.E-attach { background: var(--bg-card); border-radius: 8px; padding: 10px 12px; margin-top: 10px; border: 1.5px solid var(--border-1); }
+.E-attach .h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 11px; font-weight: 800; color: var(--tx-2); letter-spacing: .5px; }
+.E-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.E-thumb {
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, var(--accent-l), #FFB780);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: white;
+  position: relative;
+  border: 1.5px solid white;
+  box-shadow: var(--shadow-sm);
+}
+.E-thumb .x { position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--red); color: white; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; cursor: pointer; }
+.E-thumb.add { background: var(--bg-surface); border: 1.5px dashed var(--border-2); color: var(--tx-3); font-size: 22px; }
+.E-thumb.add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* 底部按钮区 */
+.E-foot { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+.E-foot .charc { font-size: 11px; color: var(--tx-3); font-weight: 700; }
+.E-foot .grow { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>UI 总规范 + 完整界面 · 重新画</h1>
+  <div class="pain">
+    <b>v1.7.27 暴露的问题</b>：<br>
+    ① 详情窗口黑底白字（system color 没强制覆盖）<br>
+    ② 部分按钮跟背景同色（"标记完成"、"关闭"、"删除"看不清）<br>
+    ③ 待办列表卡片样式不一致 / 行错位<br>
+    ④ 超宽屏 Kanban 列空旷
+  </div>
+  <div class="fix">
+    <b>本版核心规则</b>（必须严格遵守，不能再依赖系统色）：<br>
+    ① 每个组件的 <b>背景色 + 前景色</b> 必须显式定义，禁用 .labelColor / .windowBackgroundColor<br>
+    ② 所有按钮 = 4 种明确风格之一（primary / secondary / tertiary / danger），不能写 "默认 NSButton"<br>
+    ③ 文字最低对比度 4.5:1（深棕 #2c2418 vs 白底 = 14:1，OK）<br>
+    ④ 主窗口 max-width: 1280pt 居中，超宽屏不"摊大饼"
+  </div>
+</div>
+
+
+<!-- ╔═══════════ 1. 设计 Token ═══════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">DESIGN TOKENS · 必须严格</div>
+    <div class="section-name">颜色 / 字体 / 阴影 规范</div>
+    <div class="section-pitch">这是后续 Swift 实现要用的全部 token —— 不再写 .labelColor / .windowBackgroundColor，全部替换成下面定义的硬编码值</div>
+  </div>
+  <div class="section-body">
+    <div class="tokens">
+
+      <div class="token-group">
+        <h4>背景层（深→浅）</h4>
+        <div class="token-row"><div class="swatch" style="background: #fff7ec"></div><span class="nm">page</span><code>#fff7ec 奶油</code></div>
+        <div class="token-row"><div class="swatch" style="background: #fff3e0"></div><span class="nm">surface</span><code>#fff3e0 米</code></div>
+        <div class="token-row"><div class="swatch" style="background: #ffefdc"></div><span class="nm">soft</span><code>#ffefdc</code></div>
+        <div class="token-row"><div class="swatch" style="background: #ffffff"></div><span class="nm">card</span><code>#ffffff 白</code></div>
+      </div>
+
+      <div class="token-group">
+        <h4>文字（深→浅）</h4>
+        <div class="token-row"><div class="swatch" style="background: #2c2418"></div><span class="nm">tx-1</span><code>#2c2418 主</code></div>
+        <div class="token-row"><div class="swatch" style="background: #6b5f48"></div><span class="nm">tx-2</span><code>#6b5f48 副</code></div>
+        <div class="token-row"><div class="swatch" style="background: #a08f6f"></div><span class="nm">tx-3</span><code>#a08f6f 弱</code></div>
+        <div class="token-row"><div class="swatch" style="background: #c1ad8a"></div><span class="nm">tx-4</span><code>#c1ad8a 占位</code></div>
+      </div>
+
+      <div class="token-group">
+        <h4>强调色</h4>
+        <div class="token-row"><div class="swatch" style="background: #FF8C42"></div><span class="nm">accent</span><code>#FF8C42 暖橙</code></div>
+        <div class="token-row"><div class="swatch" style="background: #E0762D"></div><span class="nm">accent-d</span><code>#E0762D hover</code></div>
+        <div class="token-row"><div class="swatch" style="background: #FFD082"></div><span class="nm">accent-l</span><code>#FFD082 黄油</code></div>
+        <div class="token-row"><div class="swatch" style="background: #2e7d6b"></div><span class="nm">mint</span><code>#2e7d6b 完成</code></div>
+        <div class="token-row"><div class="swatch" style="background: #c0392b"></div><span class="nm">red</span><code>#c0392b 危险</code></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔═══════════ 2. 按钮规范 ═══════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">BUTTONS · 4 种 + 1 个图标按钮 + chip</div>
+    <div class="section-name">按钮规范 — 修「按钮看不清」</div>
+    <div class="section-pitch">每种按钮都必须 <b>显式 background + foreground</b>，不能在 NSButton 上 isBordered=false 然后期望系统给颜色。下面是必须用的 6 种。</div>
+  </div>
+  <div class="section-body">
+    <div class="btn-grid">
+
+      <div class="btn-row">
+        <h4>① PRIMARY 主操作 · 强对比</h4>
+        <div class="demo">
+          <button class="btn-primary">＋ 添加任务</button>
+          <button class="btn-primary">保存</button>
+          <button class="btn-primary">⌘↵ 提交</button>
+        </div>
+        <div class="note">背景 var(--accent) #FF8C42 + 白字 + accent shadow · 用于：主要 CTA / Submit / 添加</div>
+      </div>
+
+      <div class="btn-row">
+        <h4>② SECONDARY 次操作 · 中对比</h4>
+        <div class="demo">
+          <button class="btn-secondary">取消</button>
+          <button class="btn-secondary">存草稿</button>
+          <button class="btn-secondary">关闭</button>
+          <button class="btn-secondary">标记完成</button>
+        </div>
+        <div class="note">白底 + 深字 + 1.5px 暖米边框 · 用于：取消 / 关闭 / 次要操作（hover 变橙）</div>
+      </div>
+
+      <div class="btn-row">
+        <h4>③ TERTIARY 文字按钮</h4>
+        <div class="demo">
+          <button class="btn-tertiary">查看全部 ›</button>
+          <button class="btn-tertiary">展开</button>
+          <button class="btn-tertiary">编辑 @人名</button>
+        </div>
+        <div class="note">透明底 + 橙字 · 用于：链接 / 弱次要</div>
+      </div>
+
+      <div class="btn-row">
+        <h4>④ DANGER 危险按钮</h4>
+        <div class="demo">
+          <button class="btn-danger">删除任务</button>
+          <button class="btn-danger-ghost">清空全部历史</button>
+        </div>
+        <div class="note">红底 + 白字（实心）/ 白底 + 红字 + 红边（ghost） · 用于：删除 / 清空 / 不可逆操作</div>
+      </div>
+
+      <div class="btn-row">
+        <h4>⑤ ICON 图标按钮 · 工具栏专用</h4>
+        <div class="demo">
+          <button class="btn-icon">🔥</button>
+          <button class="btn-icon active">🕒</button>
+          <button class="btn-icon">🖼</button>
+          <button class="btn-icon">B</button>
+          <button class="btn-icon">I</button>
+          <button class="btn-icon">{}</button>
+        </div>
+        <div class="note">米底 + 深字 · hover 变黄油 / active 变橙 · 用于：工具栏、迷你按钮</div>
+      </div>
+
+      <div class="btn-row">
+        <h4>⑥ CHIP 标签胶囊（进行中 / 完成 切换）</h4>
+        <div class="demo">
+          <button class="btn-chip active">⭐ 进行中</button>
+          <button class="btn-chip">✅ 已完成</button>
+          <button class="btn-chip">📅 按时间</button>
+          <button class="btn-chip">📋 按人</button>
+        </div>
+        <div class="note">米底 + 深字 → active 橙底白字 · 用于：tab 切换 / 视图切换</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔═══════════ 3. 主窗口（紧凑 + 居中限宽 1280）═══════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">主窗口 · 修「太宽 + 行 bug」</div>
+    <div class="section-name">居中限宽 1280pt + 紧凑卡片</div>
+    <div class="section-pitch">超宽屏自动留白，卡片高度从 80pt 降到 40pt，一屏看 10 张。check 圆圈 hover/done 状态明确。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="window">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">LazyCat 🐈</span>
+      </div>
+      <div class="M-body">
+
+        <div class="M-margin-hint">———— 超宽屏奶油留白（max-width: 1280pt）————</div>
+
+        <div class="M-content">
+
+          <!-- 紧凑 Hero -->
+          <div class="M-hero">
+            <div class="av">🐈</div>
+            <div class="grow">
+              <h1>5 月 1 日 · 周五</h1>
+              <div class="sub">小懒猫 · 状态在线 💪 · 待办 8 · 完成 7</div>
+            </div>
+            <div class="pip"><div class="v">11,616</div><div class="l">今日键</div></div>
+            <div class="pip"><div class="v">3 / 7</div><div class="l">完成</div></div>
+            <div class="pip"><div class="v">42%</div><div class="l">进度</div></div>
+            <div class="pip"><div class="v">8 天</div><div class="l">连续</div></div>
+          </div>
+
+          <div class="M-main">
+            <div class="M-board">
+
+              <!-- 待办 -->
+              <div class="M-col">
+                <div class="M-col-h"><span class="ico">📥</span><span class="name">待办</span><span class="count">8</span></div>
+                <div class="M-cards">
+                  <div class="M-card t0">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">技术方案 1. 撮合域 仓位/委托结构设计</div>
+                      <div class="meta"><span class="who">@flex</span><span>17:01</span></div>
+                    </div>
+                  </div>
+                  <div class="M-card t1">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">🐛 BUG 用户 app 界面 KYC 认证…</div>
+                      <div class="meta"><span class="who">@flex</span><span>16:31</span></div>
+                    </div>
+                  </div>
+                  <div class="M-card t1">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">88 静态资源 支持 8Max</div>
+                      <div class="meta"><span class="who">@运营</span><span>16:31</span></div>
+                    </div>
+                  </div>
+                  <div class="M-card t1">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">衍生品 替换 Mysql 到 click-house</div>
+                      <div class="meta"><span class="who">@jack</span><span>16:31</span></div>
+                    </div>
+                  </div>
+                  <div class="M-card t2">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">股票 延期了</div>
+                      <div class="meta"><span class="who">@flex</span><span>15:54</span></div>
+                    </div>
+                  </div>
+                  <div class="M-card t2">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">app_service 针对用户 IP 采用 ipinfo.io</div>
+                      <div class="meta"><span class="who">@flex</span><span>15:54</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="M-add">＋ 添加</div>
+              </div>
+
+              <!-- 进行中 -->
+              <div class="M-col">
+                <div class="M-col-h"><span class="ico">⚡</span><span class="name">进行中</span><span class="count">2</span></div>
+                <div class="M-cards">
+                  <div class="M-card t0">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">技术方案 撮合域 仓位/委托设计</div>
+                      <div class="meta"><span class="who">@flex</span><span class="when late">⏰ 18:00</span><span>✍️🖼</span></div>
+                    </div>
+                  </div>
+                  <div class="M-card t1">
+                    <div class="check"></div>
+                    <div class="body">
+                      <div class="text">合约 Mysql 8.4 升级 脚本 bug 检测</div>
+                      <div class="meta"><span class="who">@len</span><span class="when late">⏰ 16:00</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="M-add">＋ 添加</div>
+              </div>
+
+              <!-- 已完成 -->
+              <div class="M-col">
+                <div class="M-col-h"><span class="ico">✅</span><span class="name">已完成</span><span class="count">7</span></div>
+                <div class="M-cards">
+                  <div class="M-card t1"><div class="check done"></div><div class="body"><div class="text done">app/Service Mysql 8.4 升级 脚本 bug 检测</div><div class="meta"><span class="who">@flex</span><span>16:31</span></div></div></div>
+                  <div class="M-card t2"><div class="check done"></div><div class="body"><div class="text done">埋点 数据库选择器</div><div class="meta"><span class="who">@flex</span><span>16:31</span></div></div></div>
+                  <div class="M-card t2"><div class="check done"></div><div class="body"><div class="text done">Hostlift business_type 1→2</div><div class="meta"><span class="who">@bey</span><span>16:31</span></div></div></div>
+                  <div class="M-card t2"><div class="check done"></div><div class="body"><div class="text done">海外动态盘 ngnix 配置增项</div><div class="meta"><span class="who">@flex</span><span>16:31</span></div></div></div>
+                  <div class="M-card t2"><div class="check done"></div><div class="body"><div class="text done">user_vip_level 等级数据</div><div class="meta"><span class="who">@bey</span><span>16:31</span></div></div></div>
+                  <div class="M-card t2"><div class="check done"></div><div class="body"><div class="text done">取消订单下单失败</div><div class="meta"><span class="who">@flex</span><span>16:31</span></div></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右栏 widget -->
+            <div class="M-right">
+              <div class="M-widget">
+                <div class="h"><div class="nm">📊 本周打字</div><div class="more">详情 ›</div></div>
+                <div class="M-bars">
+                  <div class="bar" style="height: 50%"><div class="t">一</div></div>
+                  <div class="bar" style="height: 65%"><div class="t">二</div></div>
+                  <div class="bar" style="height: 78%"><div class="t">三</div></div>
+                  <div class="bar" style="height: 60%"><div class="t">四</div></div>
+                  <div class="bar today" style="height: 90%"><div class="t">今</div></div>
+                  <div class="bar" style="opacity: .3; height: 30%"><div class="t">六</div></div>
+                  <div class="bar" style="opacity: .3; height: 30%"><div class="t">日</div></div>
+                </div>
+              </div>
+              <div class="M-widget">
+                <div class="h"><div class="nm">👥 最常合作</div><div class="more">查看 ›</div></div>
+                <div class="M-people">
+                  <div class="row"><div class="head">f</div><div class="nm">flex</div><div class="ct">8 任务</div></div>
+                  <div class="row"><div class="head" style="background: linear-gradient(135deg, #B8E0D2, #6FCF97);">l</div><div class="nm">len</div><div class="ct">2 任务</div></div>
+                  <div class="row"><div class="head" style="background: linear-gradient(135deg, #FFA8B8, #FF8AA0);">j</div><div class="nm">jack</div><div class="ct">1 任务</div></div>
+                  <div class="row"><div class="head" style="background: linear-gradient(135deg, #FFD082, #FFB780);">运</div><div class="nm">运营</div><div class="ct">1 任务</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 输入条 -->
+          <div class="M-input">
+            <div class="pick">👤 flex ▾</div>
+            <input class="text" placeholder="想到啥就敲进来 · ↵ 添加">
+            <button class="btn-icon">🔥</button>
+            <button class="btn-icon">🕒</button>
+            <button class="btn-icon">🖼</button>
+            <button class="btn-icon" style="background: var(--accent-l); color: var(--tx-1); width: auto; padding: 0 10px; font-weight: 800; font-size: 11px;">✍️ 长文</button>
+            <button class="btn-primary">＋ 添加</button>
+          </div>
+        </div>
+
+        <div class="M-margin-hint">———— 超宽屏奶油留白（max-width: 1280pt）————</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ╔═══════════ 4. 详情窗口（修黑底白字）═══════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">详情窗口 · 修「黑底白字」</div>
+    <div class="section-name">TaskDetailController · 白底 + Style B</div>
+    <div class="section-pitch">明确指定背景白 / 文字深棕 / 按钮 4 种风格区分。代码块用 surface 米底色，跟正文区别开。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="window" style="max-width: 720px; margin: 0 auto;">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">事件详情</span>
+      </div>
+      <div class="D-body">
+
+        <!-- 元信息行 -->
+        <div class="D-meta">
+          <div class="who-pill">👤 @查尔斯</div>
+          <span class="time">创建 今天 16:21</span>
+          <span class="grow"></span>
+          <span class="pri-chip">🟢 T2</span>
+          <span class="status-chip">⚡ 进行中</span>
+        </div>
+
+        <!-- 正文 -->
+        <div class="D-text">空投业务，缺少 extra 字段
+<span class="keyword">INSERT INTO</span> user_distribute (`id`, official_uid, user_id, channel_id, status, bak, `date`)
+<span class="keyword">VALUES</span>
+  (<span class="number">23283</span>, <span class="number">28</span>, <span class="number">10100016063</span>, <span class="number">101</span>, <span class="string">'AIRDROP'</span>, <span class="string">'10007'</span>, <span class="number">'2025-05-01'</span>);
+
+<span class="keyword">需要确认</span>：extra 字段类型用 <span class="string">JSON</span> 还是 <span class="string">TEXT</span>？
+- 当前 sql 跑会报「Unknown column 'extra'」
+- 建议加 <span class="keyword">ALTER TABLE</span> ... <span class="keyword">ADD COLUMN</span> extra <span class="string">TEXT</span></div>
+
+        <!-- 工具行 -->
+        <div class="D-tools">
+          <button class="tool-btn">优先级: T2 ▾</button>
+          <button class="tool-btn">🕒 设置提醒</button>
+          <input class="note-input" placeholder="备注 (50 字，回车保存)">
+        </div>
+
+        <!-- 底部按钮 -->
+        <div class="D-foot">
+          <button class="btn-danger-ghost">🗑 删除</button>
+          <span style="flex: 1;"></span>
+          <button class="btn-secondary">关闭</button>
+          <button class="btn-primary">✓ 标记完成</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: white; border-radius: 12px; padding: 14px 18px; margin-top: 16px; max-width: 720px; margin-left: auto; margin-right: auto;">
+      <h4 style="font-size: 12px; color: var(--tx-2); margin-bottom: 8px;">本版关键修改</h4>
+      <ul style="list-style: none; padding: 0; font-size: 12.5px; color: var(--tx-1); line-height: 1.7;">
+        <li>✓ 正文区从 <s>黑底白字</s> → <b style="color: var(--accent);">白底深棕字</b>（背景 var(--bg-card) + 文字 var(--tx-1)）</li>
+        <li>✓ 删除按钮从默认灰色 → <b style="color: var(--red);">红字 + 红边</b>（btn-danger-ghost）</li>
+        <li>✓ 标记完成 → <b style="color: var(--accent);">橙底白字</b>（btn-primary）</li>
+        <li>✓ 关闭 → 白底深字（btn-secondary）</li>
+        <li>✓ 优先级 chip + 状态 chip 加色 + shadow，不再透明</li>
+        <li>✓ 代码块部分用 surface 米色 + 关键字暖橙色（语法高亮）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔═══════════ 5. Markdown 编辑器 ═══════════╗ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">Markdown 编辑器 · 重整对比度</div>
+    <div class="section-name">长文 / 多图 编辑器</div>
+    <div class="section-pitch">编辑器和预览都是 <b>白底深字</b>；工具栏图标 hover 暖橙；视图切换 active 态白底橙字。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="window">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">LazyCat 🐈 · 新建任务（长文模式）</span>
+      </div>
+      <div class="E-body">
+
+        <div class="E-meta-row">
+          <input class="E-title-input" placeholder="任务标题（必填）" value="跟设计 review 锁屏方案 + Look My 警告">
+          <div class="pick">👤 李娜 ▾</div>
+          <div class="pri-pick">
+            <span class="lbl">优先级</span>
+            <div class="pd t0"></div>
+            <div class="pd t1"></div>
+            <div class="pd t2"></div>
+          </div>
+          <div class="pick">🕒 今天 15:30</div>
+        </div>
+
+        <div class="E-toolbar">
+          <button class="E-tb bold">B</button>
+          <button class="E-tb italic">I</button>
+          <button class="E-tb strike">S</button>
+          <span class="sep"></span>
+          <button class="E-tb">H</button>
+          <button class="E-tb">≡</button>
+          <button class="E-tb">¹⁾</button>
+          <button class="E-tb">"</button>
+          <span class="sep"></span>
+          <button class="E-tb">{}</button>
+          <button class="E-tb">🔗</button>
+          <button class="E-tb">🖼</button>
+          <span class="grow"></span>
+          <div class="E-view-toggle">
+            <button class="opt">仅编辑</button>
+            <button class="opt active">编辑+预览</button>
+            <button class="opt">仅预览</button>
+          </div>
+        </div>
+
+        <div class="E-split">
+          <div class="E-edit"><span class="h"># 锁屏方案 v2</span>
+
+需要跟设计同学对齐：
+
+<span class="h">## 设计要点</span>
+
+- <span class="em">**毛玻璃**</span> 跟透明度的关系
+- 0% 透明度时桌面 <span class="em">*完全可见*</span>
+- 字号档位：小 / 中 / 大 / 超大
+
+<span class="h">## 待确认</span>
+
+1. 是否还需要白色 / 暖色两套
+2. 「Look My 👀」字体大小
+
+参考 <span class="link">[Apple HIG](https://...)</span>，<span class="code">`NSVisualEffectView`</span> 用法</div>
+          <div class="E-preview">
+            <h1>锁屏方案 v2</h1>
+            <p>需要跟设计同学对齐：</p>
+            <h2>设计要点</h2>
+            <ul>
+              <li><strong>毛玻璃</strong> 跟透明度的关系</li>
+              <li>0% 透明度时桌面 <em>完全可见</em></li>
+              <li>字号档位：小 / 中 / 大 / 超大</li>
+            </ul>
+            <h2>待确认</h2>
+            <ol style="margin-left: 20px;">
+              <li>是否还需要白色 / 暖色两套</li>
+              <li>「Look My 👀」字体大小</li>
+            </ol>
+            <p>参考 <a href="#" style="color: var(--accent); font-weight: 700;">Apple HIG</a>，<code>NSVisualEffectView</code> 用法</p>
+          </div>
+        </div>
+
+        <div class="E-attach">
+          <div class="h">🖼  图片附件 · 2 张 · 拖拽 / 粘贴 / Cmd+V</div>
+          <div class="E-thumbs">
+            <div class="E-thumb">📐<div class="x">×</div></div>
+            <div class="E-thumb" style="background: linear-gradient(135deg, #B8E0D2, #6FCF97);">📊<div class="x">×</div></div>
+            <div class="E-thumb add">＋</div>
+          </div>
+        </div>
+
+        <div class="E-foot">
+          <span class="charc">312 / 5000 字</span>
+          <span class="grow"></span>
+          <button class="btn-secondary">取消</button>
+          <button class="btn-secondary">存草稿</button>
+          <button class="btn-primary">＋ 添加任务  ⌘↵</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="intro" style="margin-top: 28px">
+  <h1 style="font-size: 18px">下一步</h1>
+  <p>这一版 UI 把以下 4 个问题都回答了：</p>
+  <ol style="margin-left: 20px; color: var(--tx-1); font-size: 14px; line-height: 1.8;">
+    <li><b>按钮看不清</b> → 6 种明确按钮风格 (primary/secondary/tertiary/danger/icon/chip)，每种都有 bg+fg 显式定义</li>
+    <li><b>详情窗口黑底白字</b> → 全部白底深棕字 + Style B 调色</li>
+    <li><b>待办列表 行 bug</b> → 紧凑卡片 layout 严格定义，每个元素位置明确</li>
+    <li><b>太宽</b> → 主窗口 max-width: 1280pt 居中，超宽屏奶油色留白</li>
+  </ol>
+  <p style="margin-top: 12px; color: var(--accent); font-weight: 700;">这版 OK 的话告诉我，我按这套 token 把 Swift 代码全部改一遍。</p>
+</div>
+
+</body>
+</html>

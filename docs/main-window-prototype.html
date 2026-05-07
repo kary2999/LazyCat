@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · 主窗口布局原型 · 两个方案 PK</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  background: #ebecef;
+  color: #4F4534;
+  -webkit-font-smoothing: antialiased;
+  padding: 32px;
+}
+.intro {
+  max-width: 1400px; margin: 0 auto 36px;
+  background: white; border-radius: 14px; padding: 22px 28px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.intro h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: #4F4534; letter-spacing: -.3px; }
+.intro p { color: #6b5f48; font-size: 14px; line-height: 1.6; margin-bottom: 4px; }
+.intro .pain { background: #fff3e0; border-left: 4px solid #FF8C42; padding: 10px 14px; margin-top: 12px; border-radius: 6px; }
+.intro .pain b { color: #d35400; }
+
+.cols {
+  max-width: 1500px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+}
+
+.proposal {
+  background: white;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,.08);
+}
+.proposal-header {
+  padding: 20px 26px 16px;
+  background: linear-gradient(135deg, #fff3e0, #ffe7c0);
+  border-bottom: 1.5px solid #f5dfb5;
+}
+.proposal-tag {
+  display: inline-block; background: #FF8C42; color: white;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+  padding: 4px 10px; border-radius: 4px; margin-bottom: 8px;
+}
+.proposal-name { font-size: 22px; font-weight: 800; color: #4F4534; margin-bottom: 4px; letter-spacing: -.3px; }
+.proposal-pitch { color: #6b5f48; font-size: 13px; line-height: 1.6; }
+
+.proposal-body { padding: 22px; background: #fff7ec; }
+
+/* ========== 共享窗口 chrome ========== */
+.window {
+  border-radius: 14px;
+  background: #fffbf3;
+  border: 1.5px solid #f5dfb5;
+  overflow: hidden;
+  box-shadow: 0 16px 38px rgba(180,110,30,.14);
+}
+.titlebar {
+  height: 30px; background: #ffefdc; border-bottom: 1.5px solid #f5dfb5;
+  display: flex; align-items: center; gap: 8px; padding: 0 14px;
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.1); }
+.dot.y { background: #ffbd2e; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.1); }
+.dot.g { background: #28c840; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.1); }
+.title-text { flex: 1; text-align: center; font-size: 12px; color: #6b5f48; font-weight: 600; }
+
+/* ========== Proposal A：三栏经典 ========== */
+.A-body { display: flex; min-height: 580px; }
+
+.A-sidebar { width: 200px; background: #fff3e0; border-right: 1.5px solid #f5dfb5; padding: 14px 10px; }
+.A-who-card {
+  background: white; border-radius: 12px; padding: 12px;
+  box-shadow: 0 2px 8px rgba(180,110,30,.08);
+  margin-bottom: 16px;
+}
+.A-who-card .top { display: flex; align-items: center; gap: 10px; }
+.A-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF8C42, #FFD082);
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.A-who-card .nm { font-size: 13px; font-weight: 800; }
+.A-who-card .sub { font-size: 10.5px; color: #a08f6f; margin-top: 1px; font-weight: 500; }
+.A-who-card .progress { margin-top: 10px; }
+.A-who-card .progress-bar { height: 6px; background: #fff3e0; border-radius: 3px; overflow: hidden; }
+.A-who-card .progress-bar > i { display: block; height: 100%; background: linear-gradient(90deg, #FF8C42, #FFD082); width: 42%; border-radius: 3px; }
+.A-who-card .progress-text { font-size: 10.5px; color: #a08f6f; margin-top: 4px; font-weight: 600; display: flex; justify-content: space-between; }
+
+.A-section-title {
+  font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+  color: #b09e80; text-transform: uppercase;
+  padding: 8px 10px 4px;
+}
+.A-nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 8px; color: #6b5f48;
+  font-weight: 600; font-size: 12.5px; margin-bottom: 1px; cursor: pointer;
+}
+.A-nav-item .ico { font-size: 14px; width: 16px; text-align: center; }
+.A-nav-item .badge { margin-left: auto; font-size: 10.5px; color: #b09e80; font-weight: 700;
+  background: white; padding: 1px 7px; border-radius: 999px; }
+.A-nav-item.active { background: #FF8C42; color: white; box-shadow: 0 3px 8px rgba(255,140,66,.3); }
+.A-nav-item.active .badge { color: white; background: rgba(255,255,255,.25); }
+.A-nav-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.A-nav-dot.t0 { background: #d4302a; }
+.A-nav-dot.t1 { background: #c46c00; }
+.A-nav-dot.t2 { background: #2e7d32; }
+
+.A-main { flex: 1; padding: 18px 22px; }
+.A-main .crumb {
+  font-size: 11px; color: #a08f6f; font-weight: 600; margin-bottom: 6px;
+}
+.A-main h1 {
+  font-size: 22px; font-weight: 800; color: #4F4534; letter-spacing: -.2px;
+  display: flex; align-items: center; gap: 10px;
+}
+.A-main h1 .num { font-size: 14px; color: #a08f6f; font-weight: 600; }
+
+/* 折叠 / 展开式输入卡 */
+.A-input-card {
+  background: white; border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(180,110,30,.08);
+  margin-top: 14px; overflow: hidden;
+}
+.A-input-row {
+  display: flex; align-items: center; gap: 8px; padding: 12px;
+}
+.A-input-row .who-pick {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff3e0; border-radius: 8px; padding: 7px 10px;
+  font-size: 12px; font-weight: 700; color: #6b5f48; cursor: pointer;
+}
+.A-input-row .text-input {
+  flex: 1; padding: 8px 12px; border: 1px solid #f5dfb5; border-radius: 8px;
+  font-size: 13px; outline: none;
+  background: #fffbf3; color: #4F4534;
+}
+.A-pill-pick { display: flex; gap: 4px; }
+.A-pill-pick .dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.A-pill-pick .dot.t0 { background: #ffd9da; }
+.A-pill-pick .dot.t0.on { border-color: #d4302a; background: #d4302a; }
+.A-pill-pick .dot.t1 { background: #ffe7c0; border-color: #FF8C42; }
+.A-pill-pick .dot.t2 { background: #d5ecdc; }
+.A-input-row .submit {
+  background: #FF8C42; color: white; border: 0;
+  padding: 8px 18px; border-radius: 8px;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  box-shadow: 0 4px 10px rgba(255,140,66,.3);
+}
+.A-input-expand {
+  border-top: 1.5px dashed #f5dfb5;
+  padding: 10px 12px;
+  display: flex; gap: 8px; font-size: 11px; color: #a08f6f;
+}
+.A-input-expand .chip {
+  background: #fff3e0; padding: 4px 10px; border-radius: 999px;
+  font-weight: 600; cursor: pointer;
+}
+
+.A-list { margin-top: 16px; }
+.A-task {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; margin-bottom: 8px;
+  background: white; border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(180,110,30,.06);
+}
+.A-task .check {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid #f5c894; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700;
+}
+.A-task .check.done { background: #FF8C42; border-color: #FF8C42; }
+.A-task .pri-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.A-task .pri-dot.t0 { background: #d4302a; box-shadow: 0 0 0 3px rgba(212,48,42,.15); }
+.A-task .pri-dot.t1 { background: #c46c00; box-shadow: 0 0 0 3px rgba(196,108,0,.15); }
+.A-task .pri-dot.t2 { background: #2e7d32; box-shadow: 0 0 0 3px rgba(46,125,50,.15); }
+.A-task .body { flex: 1; min-width: 0; }
+.A-task .body .text { font-size: 13.5px; color: #4F4534; font-weight: 500; }
+.A-task .body .text.done { text-decoration: line-through; color: #b09e80; }
+.A-task .body .meta { display: flex; gap: 12px; font-size: 11px; color: #a08f6f; margin-top: 4px; font-weight: 600; }
+.A-task .body .meta .who { color: #6b5f48; }
+.A-task .body .meta .due-soon { color: #d4302a; font-weight: 700; }
+
+.A-right {
+  width: 220px; background: #fff7ec; border-left: 1.5px solid #f5dfb5; padding: 14px;
+}
+.A-stat-card {
+  background: white; border-radius: 12px; padding: 14px;
+  box-shadow: 0 2px 8px rgba(180,110,30,.06);
+  margin-bottom: 12px;
+}
+.A-stat-card .ttl { font-size: 11px; color: #b09e80; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
+.A-stat-card .big { font-size: 28px; font-weight: 800; color: #FF8C42; line-height: 1; }
+.A-stat-card .sub { font-size: 11px; color: #a08f6f; margin-top: 4px; }
+.A-stat-card .ring {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: conic-gradient(#FF8C42 0deg 154deg, #fff3e0 154deg 360deg);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+.A-stat-card .ring .inner {
+  width: 50px; height: 50px; border-radius: 50%; background: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #4F4534;
+}
+
+/* ========== Proposal B：时间线流式 ========== */
+.B-body { padding: 18px 24px 22px; min-height: 580px; }
+
+.B-status {
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(135deg, #fff3e0, #ffe7c0);
+  border-radius: 16px; padding: 14px 20px; margin-bottom: 16px;
+}
+.B-status .avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: white; display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 2px 8px rgba(180,110,30,.1);
+}
+.B-status .grow { flex: 1; }
+.B-status .greeting { font-size: 14px; font-weight: 800; color: #4F4534; }
+.B-status .meta { font-size: 11.5px; color: #6b5f48; margin-top: 3px; font-weight: 600; }
+.B-status .pip {
+  background: white; padding: 8px 14px; border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(180,110,30,.06);
+}
+.B-status .pip .num { font-size: 18px; font-weight: 800; color: #FF8C42; line-height: 1; }
+.B-status .pip .lbl { font-size: 10px; color: #a08f6f; margin-top: 2px; font-weight: 600; }
+
+.B-input-card {
+  background: white; border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(180,110,30,.08);
+  padding: 14px;
+  margin-bottom: 18px;
+}
+.B-input-grid {
+  display: grid;
+  grid-template-columns: 130px 1fr 32px 32px 32px 84px;
+  gap: 8px;
+  align-items: center;
+}
+.B-input-grid .who-pick {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff3e0; border-radius: 8px; padding: 8px 10px;
+  font-size: 12px; font-weight: 700; color: #6b5f48; cursor: pointer;
+}
+.B-input-grid .text {
+  padding: 9px 12px; border: 1px solid #f5dfb5; border-radius: 8px;
+  font-size: 13px; outline: none;
+  background: #fffbf3; color: #4F4534;
+}
+.B-input-grid .toolbtn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: #fff3e0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: #6b5f48;
+}
+.B-input-grid .toolbtn:hover { background: #FFD082; }
+.B-input-grid .submit {
+  background: #FF8C42; color: white; border: 0;
+  padding: 8px 0; border-radius: 8px;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  box-shadow: 0 4px 10px rgba(255,140,66,.3);
+}
+.B-input-hint {
+  font-size: 10.5px; color: #b09e80; margin-top: 8px; padding-left: 4px;
+}
+.B-input-hint kbd {
+  background: #fff3e0; border-radius: 3px; padding: 1px 5px; font-family: -apple-system; font-weight: 700; color: #6b5f48;
+}
+
+.B-tools {
+  display: flex; gap: 8px; margin-bottom: 14px; align-items: center;
+}
+.B-tools .tab {
+  background: white; border: 1.5px solid #f5dfb5; padding: 6px 14px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; color: #6b5f48; cursor: pointer;
+}
+.B-tools .tab.active { background: #FF8C42; border-color: #FF8C42; color: white; }
+.B-tools .grow { flex: 1; }
+.B-tools .toggle {
+  background: white; border: 1.5px solid #f5dfb5; padding: 5px 10px; border-radius: 8px;
+  font-size: 11px; color: #6b5f48; font-weight: 700; cursor: pointer;
+}
+
+/* 时间线分组 */
+.B-section { margin-bottom: 16px; }
+.B-section-h {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.B-section-h .t {
+  font-size: 13px; font-weight: 800; color: #4F4534;
+}
+.B-section-h .pill {
+  background: #FF8C42; color: white;
+  font-size: 10.5px; font-weight: 800;
+  padding: 2px 9px; border-radius: 999px;
+}
+.B-section-h .pill.late { background: #d4302a; }
+.B-section-h .pill.future { background: #b09e80; }
+.B-section-h .grow { flex: 1; }
+.B-section-h .toggle { font-size: 12px; color: #a08f6f; cursor: pointer; }
+
+.B-task {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; margin-bottom: 6px;
+  background: white; border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(180,110,30,.06);
+}
+.B-task .check {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid #f5c894; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700;
+}
+.B-task .check.done { background: #FF8C42; border-color: #FF8C42; }
+.B-task .text { flex: 1; font-size: 13.5px; color: #4F4534; font-weight: 500; min-width: 0; }
+.B-task .text.done { text-decoration: line-through; color: #b09e80; }
+.B-task .pill-pri {
+  font-size: 10px; font-weight: 800;
+  padding: 2px 7px; border-radius: 999px;
+}
+.B-task .pill-pri.t0 { background: #ffd9da; color: #c0392b; }
+.B-task .pill-pri.t1 { background: #ffe7c0; color: #b75e00; }
+.B-task .pill-pri.t2 { background: #d5ecdc; color: #2e7d32; }
+.B-task .who-tag { font-size: 11px; color: #6b5f48; font-weight: 600; background: #fff3e0; padding: 2px 8px; border-radius: 6px; }
+.B-task .when { font-size: 11px; color: #a08f6f; font-weight: 600; }
+
+/* ========= 优劣对比 ========= */
+.compare {
+  margin-top: 14px;
+  background: #fffbf3;
+  border: 1.5px dashed #f5dfb5;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.compare h4 { font-size: 12px; font-weight: 800; color: #6b5f48; margin-bottom: 6px; letter-spacing: 0.5px; }
+.compare ul { list-style: none; }
+.compare li { font-size: 12.5px; color: #4F4534; padding: 3px 0; line-height: 1.5; }
+.compare li.good::before { content: "✓ "; color: #2e7d32; font-weight: 800; }
+.compare li.bad::before  { content: "✗ "; color: #c0392b; font-weight: 800; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>主窗口布局原型 · 两个方案 PK</h1>
+  <p>当前主窗口的痛点：</p>
+  <div class="pain">
+    <b>① 输入区一行挤 4 个控件</b>（人名 + 优先级 + 定时 + 添加），看着乱
+    <br><b>② 2000 字文本区强制占大半屏</b>，但大多数任务就 1 句话，浪费空间
+    <br><b>③ 没有分类导航</b>（按人 / 按优先级 / 按时间），所有任务混在一个表里
+    <br><b>④ 没有"今日总览"</b>，看不见自己完成了多少
+    <br><b>⑤ 强制深色模式</b>，跟我们 Style B 暖橘调撞色
+  </div>
+  <p style="margin-top: 12px">下面两个方案都用 Style B 重新设计，左右各一个。</p>
+</div>
+
+<div class="cols">
+
+  <!-- ╔══════════════ Proposal A ══════════════╗ -->
+  <div class="proposal">
+    <div class="proposal-header">
+      <div class="proposal-tag">PROPOSAL A</div>
+      <div class="proposal-name">三栏经典 · Sidebar + 主区 + 总览</div>
+      <div class="proposal-pitch">最像专业生产力工具的版本。<br>左 sidebar 分类，中间任务，右栏看今日进度 + 打字 + 提醒。</div>
+    </div>
+    <div class="proposal-body">
+
+      <div class="window">
+        <div class="titlebar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="title-text">LazyCat 🐈</span>
+        </div>
+        <div class="A-body">
+          <!-- LEFT SIDEBAR -->
+          <div class="A-sidebar">
+            <div class="A-who-card">
+              <div class="top">
+                <div class="A-avatar">🐈</div>
+                <div>
+                  <div class="nm">小懒猫</div>
+                  <div class="sub">连续 8 天</div>
+                </div>
+              </div>
+              <div class="progress">
+                <div class="progress-bar"><i></i></div>
+                <div class="progress-text"><span>今日 3 / 7</span><span>42%</span></div>
+              </div>
+            </div>
+
+            <div class="A-section-title">视图</div>
+            <div class="A-nav-item active"><span class="ico">📥</span>收件箱<span class="badge">7</span></div>
+            <div class="A-nav-item"><span class="ico">⭐️</span>今日<span class="badge">3</span></div>
+            <div class="A-nav-item"><span class="ico">📅</span>本周<span class="badge">12</span></div>
+            <div class="A-nav-item"><span class="ico">✅</span>已完成<span class="badge">42</span></div>
+
+            <div class="A-section-title">优先级</div>
+            <div class="A-nav-item"><span class="A-nav-dot t0"></span>T0 紧急<span class="badge">2</span></div>
+            <div class="A-nav-item"><span class="A-nav-dot t1"></span>T1 重要<span class="badge">3</span></div>
+            <div class="A-nav-item"><span class="A-nav-dot t2"></span>T2 一般<span class="badge">2</span></div>
+
+            <div class="A-section-title">人</div>
+            <div class="A-nav-item"><span class="ico">👤</span>张伟<span class="badge">4</span></div>
+            <div class="A-nav-item"><span class="ico">👤</span>李娜<span class="badge">2</span></div>
+            <div class="A-nav-item"><span class="ico">👤</span>王磊<span class="badge">1</span></div>
+          </div>
+
+          <!-- MAIN COLUMN -->
+          <div class="A-main">
+            <div class="crumb">视图 / 收件箱</div>
+            <h1>📥 收件箱<span class="num">7 个待办</span></h1>
+
+            <!-- 输入卡 -->
+            <div class="A-input-card">
+              <div class="A-input-row">
+                <div class="who-pick">👤 选人 ▾</div>
+                <input class="text-input" placeholder="今天要做点什么？" value="跟设计 review 锁屏方案">
+                <div class="A-pill-pick">
+                  <div class="dot t0"></div>
+                  <div class="dot t1 on"></div>
+                  <div class="dot t2"></div>
+                </div>
+                <button class="submit">＋ 添加</button>
+              </div>
+              <div class="A-input-expand">
+                <span class="chip">🕒 定时提醒</span>
+                <span class="chip">🖼 贴图</span>
+                <span class="chip">✍️ 长文</span>
+              </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div class="A-list">
+              <div class="A-task">
+                <div class="check"></div>
+                <div class="pri-dot t0"></div>
+                <div class="body">
+                  <div class="text">定 release 排期 · 周五前 ship</div>
+                  <div class="meta"><span class="who">👤 张伟</span><span class="due-soon">⏰ 今天 18:00</span><span>🖼 2 图</span></div>
+                </div>
+              </div>
+              <div class="A-task">
+                <div class="check"></div>
+                <div class="pri-dot t1"></div>
+                <div class="body">
+                  <div class="text">跟设计 review 锁屏方案 + Look My 警告</div>
+                  <div class="meta"><span class="who">👤 李娜</span><span>明天</span></div>
+                </div>
+              </div>
+              <div class="A-task">
+                <div class="check done">✓</div>
+                <div class="pri-dot t2"></div>
+                <div class="body">
+                  <div class="text done">整理周报模板 · 同步至共享盘</div>
+                  <div class="meta"><span class="who">👤 王磊</span><span>已完成 · 30 分钟前 🎉</span></div>
+                </div>
+              </div>
+              <div class="A-task">
+                <div class="check"></div>
+                <div class="pri-dot t1"></div>
+                <div class="body">
+                  <div class="text">提测：打字统计 + 30 日图表 + Look My 红字</div>
+                  <div class="meta"><span class="who">👤 张伟</span><span>5/3</span></div>
+                </div>
+              </div>
+              <div class="A-task">
+                <div class="check"></div>
+                <div class="pri-dot t2"></div>
+                <div class="body">
+                  <div class="text">写 v1.7.24 release notes</div>
+                  <div class="meta"><span class="who">👤 自己</span><span>本周内</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT INSIGHTS -->
+          <div class="A-right">
+            <div class="A-stat-card">
+              <div class="ttl">今日进度</div>
+              <div class="ring"><div class="inner">42%</div></div>
+              <div class="sub" style="text-align: center; margin-top: 8px">3 / 7 完成</div>
+            </div>
+            <div class="A-stat-card">
+              <div class="ttl">今日打字</div>
+              <div class="big">11,616</div>
+              <div class="sub">比昨天 +1,241</div>
+            </div>
+            <div class="A-stat-card">
+              <div class="ttl">即将到期</div>
+              <div style="font-size: 12px; color: #d4302a; font-weight: 800; margin-bottom: 4px;">⏰ 今天 18:00</div>
+              <div style="font-size: 11px; color: #6b5f48;">定 release 排期 · 周五前 ship</div>
+            </div>
+            <div class="A-stat-card">
+              <div class="ttl">最常合作</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <div style="background: #FF8C42; color: white; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;">张伟 · 4</div>
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <div style="background: #FFD082; color: #6b5f48; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;">李娜 · 2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare">
+        <h4>方案 A 优劣</h4>
+        <ul>
+          <li class="good">分类导航直接，按人 / 按优先级 / 按时间一眼切</li>
+          <li class="good">右栏总览 = 进度环 + 打字数 + 即将到期，每打开就给一份"今日成绩单"</li>
+          <li class="good">输入卡折叠：默认一行，需要长文/贴图时才展开</li>
+          <li class="bad">屏幕宽度需求 ≥ 880pt，小笔记本可能挤</li>
+          <li class="bad">右栏 + sidebar 可能"信息过载"，新手前 30s 不知道看哪</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ╔══════════════ Proposal B ══════════════╗ -->
+  <div class="proposal">
+    <div class="proposal-header">
+      <div class="proposal-tag">PROPOSAL B</div>
+      <div class="proposal-name">时间线流式 · 单页聚焦</div>
+      <div class="proposal-pitch">参考 Things 3 的 Today 视图。<br>顶部状态条 + 输入永驻 + 任务按时间分组（今天 / 明天 / 本周 / 稍后）。</div>
+    </div>
+    <div class="proposal-body">
+
+      <div class="window">
+        <div class="titlebar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="title-text">LazyCat 🐈</span>
+        </div>
+        <div class="B-body">
+
+          <!-- 状态条 -->
+          <div class="B-status">
+            <div class="avatar">🐈</div>
+            <div class="grow">
+              <div class="greeting">早上好，小懒猫 ☀️</div>
+              <div class="meta">今天 3 / 7 完成 · 连续 8 天 · 喝口水再继续</div>
+            </div>
+            <div class="pip"><div class="num">11,616</div><div class="lbl">今日键</div></div>
+            <div class="pip"><div class="num">3 / 7</div><div class="lbl">今日完成</div></div>
+          </div>
+
+          <!-- 输入卡（横向网格，比当前实现紧凑 30%） -->
+          <div class="B-input-card">
+            <div class="B-input-grid">
+              <div class="who-pick">👤 张伟 ▾</div>
+              <input class="text" placeholder="今天要做点什么？" value="跟设计 review 锁屏方案">
+              <div class="toolbtn" title="优先级">🔥</div>
+              <div class="toolbtn" title="定时">🕒</div>
+              <div class="toolbtn" title="贴图">🖼</div>
+              <button class="submit">＋ 添加</button>
+            </div>
+            <div class="B-input-hint">
+              提示：<kbd>⌘N</kbd> 聚焦输入　·　<kbd>↵</kbd> 添加　·　<kbd>⇧↵</kbd> 长文模式
+            </div>
+          </div>
+
+          <!-- 工具行 -->
+          <div class="B-tools">
+            <div class="tab active">⭐ 进行中</div>
+            <div class="tab">✅ 已完成</div>
+            <div class="grow"></div>
+            <div class="toggle">📅 按时间</div>
+            <div class="toggle">📋 按人</div>
+          </div>
+
+          <!-- 时间线分组 -->
+          <div class="B-section">
+            <div class="B-section-h">
+              <span class="t">⏰ 今天</span>
+              <span class="pill">3</span>
+              <span class="grow"></span>
+              <span class="toggle">−</span>
+            </div>
+            <div class="B-task">
+              <div class="check"></div>
+              <span class="pill-pri t0">T0</span>
+              <div class="text">定 release 排期 · 周五前 ship</div>
+              <span class="who-tag">👤 张伟</span>
+              <span class="when">18:00</span>
+            </div>
+            <div class="B-task">
+              <div class="check"></div>
+              <span class="pill-pri t1">T1</span>
+              <div class="text">跟设计 review 锁屏方案 + Look My 警告</div>
+              <span class="who-tag">👤 李娜</span>
+              <span class="when">15:30</span>
+            </div>
+            <div class="B-task">
+              <div class="check done">✓</div>
+              <span class="pill-pri t2">T2</span>
+              <div class="text done">整理周报模板</div>
+              <span class="who-tag">👤 王磊</span>
+              <span class="when">完成</span>
+            </div>
+          </div>
+
+          <div class="B-section">
+            <div class="B-section-h">
+              <span class="t">📅 明天</span>
+              <span class="pill future">2</span>
+              <span class="grow"></span>
+              <span class="toggle">−</span>
+            </div>
+            <div class="B-task">
+              <div class="check"></div>
+              <span class="pill-pri t1">T1</span>
+              <div class="text">跟产品对齐 v2.0 路线图</div>
+              <span class="who-tag">👤 张伟</span>
+              <span class="when">10:00</span>
+            </div>
+            <div class="B-task">
+              <div class="check"></div>
+              <span class="pill-pri t2">T2</span>
+              <div class="text">提交 v1.7.24 dist 包到内网</div>
+              <span class="who-tag">👤 自己</span>
+              <span class="when">下午</span>
+            </div>
+          </div>
+
+          <div class="B-section">
+            <div class="B-section-h">
+              <span class="t">🔥 本周</span>
+              <span class="pill future">2</span>
+              <span class="grow"></span>
+              <span class="toggle">−</span>
+            </div>
+            <div class="B-task">
+              <div class="check"></div>
+              <span class="pill-pri t1">T1</span>
+              <div class="text">提测：打字统计 + 30 日图表 + Look My 红字</div>
+              <span class="who-tag">👤 张伟</span>
+              <span class="when">5/3</span>
+            </div>
+            <div class="B-task">
+              <div class="check"></div>
+              <span class="pill-pri t2">T2</span>
+              <div class="text">写 v1.7.24 release notes</div>
+              <span class="who-tag">👤 自己</span>
+              <span class="when">5/4</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="compare">
+        <h4>方案 B 优劣</h4>
+        <ul>
+          <li class="good">单栏聚焦，13" 笔记本完美适配</li>
+          <li class="good">时间线分组贴合"今天该做什么"的心智，不用切来切去</li>
+          <li class="good">输入卡用 emoji 工具按钮，一行 hold 住所有控件，紧凑 30%</li>
+          <li class="good">顶部状态条 = 进度 + 键数 + 心情语，每次开窗都被"陪伴"</li>
+          <li class="bad">没有分人 / 分优先级的快捷视图（要靠"按人 / 按时间" toggle 切）</li>
+          <li class="bad">任务多时（>20）滚动列表会很长</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="intro" style="margin-top: 28px">
+  <h1 style="font-size: 18px">挑哪个？</h1>
+  <p><b>A 适合</b>：你常常按人 / 按优先级筛选，团队协作场景，希望一眼看到所有维度（推荐评委席给"专业感"）</p>
+  <p><b>B 适合</b>：你主要是个人记录 + 当天聚焦，喜欢 Things / Reminders 那种安静的单栏，希望评委说"很治愈"</p>
+  <p style="margin-top: 8px;color: #d35400; font-weight: 700">告诉我 A / B / 或者混搭（比如 B 的状态条 + A 的右栏总览），我把 ContentViewController 全部按那套重写。</p>
+</div>
+
+</body>
+</html>

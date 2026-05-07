@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>LazyCat · UI 原型 v2 · 两套风格 PK</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  background: #ebecef;
+  color: #1d1d1f;
+  -webkit-font-smoothing: antialiased;
+}
+.page-header {
+  text-align: center;
+  padding: 56px 32px 32px;
+  background: linear-gradient(180deg, #fff 0%, #ebecef 100%);
+}
+.page-header h1 { font-size: 32px; font-weight: 800; letter-spacing: -.5px; margin: 0 0 6px; }
+.page-header p { color: #6e6e73; font-size: 15px; margin: 0; }
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid #d8d9dd;
+}
+.col {
+  padding: 36px 28px 64px;
+  min-height: 100vh;
+}
+.col + .col { border-left: 1px solid #d8d9dd; }
+.style-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.style-name { font-size: 26px; font-weight: 800; margin: 0 0 4px; letter-spacing: -.3px; }
+.style-pitch { color: #6e6e73; font-size: 14px; margin: 0 0 4px; line-height: 1.5; }
+.palette { display: flex; gap: 6px; margin: 14px 0 28px; }
+.swatch { width: 28px; height: 28px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #8e8e93;
+  text-transform: uppercase;
+  margin: 36px 0 12px;
+}
+
+/* ========= shared window chrome ========= */
+.window {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.13), 0 6px 18px rgba(0,0,0,.06);
+  margin-bottom: 8px;
+}
+.titlebar {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.1); }
+.dot.y { background: #ffbd2e; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.1); }
+.dot.g { background: #28c840; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.1); }
+.title-text { flex: 1; text-align: center; font-size: 12px; color: #777; font-weight: 500; }
+
+/* =========================================================
+   风格 A · 极简现代 / macOS Native
+   ========================================================= */
+.A .style-tag { background: #1d1d1f; color: white; }
+.A .swatch:nth-child(1) { background: #ffffff; border: 1px solid #d2d2d7; }
+.A .swatch:nth-child(2) { background: #f5f5f7; }
+.A .swatch:nth-child(3) { background: #1d1d1f; }
+.A .swatch:nth-child(4) { background: #5E5CE6; }
+.A .swatch:nth-child(5) { background: #34c759; }
+
+.A .titlebar { background: #f5f5f7; border-bottom: 1px solid #e5e5e7; }
+.A .window { background: #fff; }
+
+/* A — 主窗口 */
+.A-main { font-size: 13px; }
+.A-main .body { display: flex; min-height: 380px; }
+.A-main .sidebar { width: 180px; background: #fafafc; border-right: 1px solid #ececec; padding: 14px 8px; }
+.A-main .nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 7px; color: #3a3a3c;
+  font-weight: 500; font-size: 13px;
+}
+.A-main .nav-item .ico { width: 18px; text-align: center; }
+.A-main .nav-item .badge { margin-left: auto; font-size: 11px; color: #8e8e93; }
+.A-main .nav-item.active { background: #5E5CE6; color: #fff; }
+.A-main .nav-item.active .badge { color: rgba(255,255,255,.85); }
+.A-main .sidebar-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  color: #8e8e93; text-transform: uppercase; padding: 12px 10px 6px;
+}
+.A-main .content { flex: 1; padding: 18px 24px; }
+.A-main .h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+.A-main .sub { color: #8e8e93; font-size: 12px; margin: 0 0 16px; }
+.A-main .quick {
+  display: flex; gap: 8px; margin-bottom: 18px;
+}
+.A-main .quick input {
+  flex: 1; padding: 9px 12px; border: 1px solid #d2d2d7;
+  border-radius: 8px; font-size: 13px; outline: none;
+}
+.A-main .pri-btn {
+  padding: 9px 16px; border-radius: 8px; background: #5E5CE6;
+  color: white; border: 0; font-weight: 600; font-size: 13px; cursor: pointer;
+}
+.A-main .row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid #f0f0f3;
+}
+.A-main .row:last-child { border-bottom: 0; }
+.A-main .check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.5px solid #c7c7cc; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: white;
+}
+.A-main .check.done { background: #5E5CE6; border-color: #5E5CE6; }
+.A-main .pill {
+  display: inline-block; padding: 1px 7px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  margin-right: 6px;
+}
+.A-main .p0 { background: #ffe9eb; color: #d4302a; }
+.A-main .p1 { background: #fff0d7; color: #b75e00; }
+.A-main .p2 { background: #e3f1e6; color: #2e7d32; }
+.A-main .row-text { flex: 1; font-size: 13px; color: #1d1d1f; }
+.A-main .row-text.done { text-decoration: line-through; color: #aaa; }
+.A-main .who { color: #8e8e93; font-size: 11px; margin-left: 4px; }
+.A-main .when { font-size: 11px; color: #8e8e93; }
+
+/* A — 统计 */
+.A-stats { font-size: 13px; }
+.A-stats .body { padding: 22px 28px 24px; }
+.A-stats .stat-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.A-stats .greet { font-size: 13px; color: #6e6e73; margin: 0 0 4px; }
+.A-stats .h-title { font-size: 18px; font-weight: 700; margin: 0; }
+.A-stats .big-num { font-size: 56px; font-weight: 800; color: #5E5CE6; line-height: 1; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+.A-stats .small-cap { font-size: 11px; color: #8e8e93; text-align: right; margin-top: 4px; }
+.A-stats .section-h { font-size: 12px; font-weight: 700; color: #6e6e73; letter-spacing: 1px; margin: 14px 0 8px; }
+.A-stats .key-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.A-stats .key-rank { width: 18px; font-weight: 700; font-size: 12px; color: #8e8e93; font-variant-numeric: tabular-nums; }
+.A-stats .key-name { width: 88px; font-weight: 600; font-size: 13px; }
+.A-stats .key-bar { flex: 1; height: 8px; background: #f0f0f3; border-radius: 4px; overflow: hidden; }
+.A-stats .key-bar > i { display: block; height: 100%; background: linear-gradient(90deg, #5E5CE6, #8E8AFF); border-radius: 4px; }
+.A-stats .key-cnt { font-size: 12px; color: #6e6e73; font-variant-numeric: tabular-nums; }
+.A-stats .chart {
+  margin-top: 14px;
+  height: 110px; background: #fafafc; border-radius: 8px; padding: 10px 12px;
+  display: flex; align-items: flex-end; gap: 3px;
+}
+.A-stats .bar { flex: 1; background: #5E5CE6; border-radius: 2px; opacity: .55; transition: opacity .3s; }
+.A-stats .bar.peak { opacity: 1; }
+.A-stats .bar.today { background: #34c759; opacity: 1; }
+
+/* A — 菜单栏 */
+.A-menu {
+  width: 280px; border-radius: 10px; overflow: hidden;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(20px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.18);
+  font-size: 13px; padding: 5px 0;
+  border: 1px solid rgba(0,0,0,.08);
+}
+.A-menu .mi { display: flex; align-items: center; padding: 6px 14px; gap: 10px; color: #1d1d1f; }
+.A-menu .mi.active { background: #5E5CE6; color: white; }
+.A-menu .mi .ico { width: 18px; text-align: center; opacity: .8; }
+.A-menu .mi .kbd { margin-left: auto; font-size: 11px; color: #8e8e93; }
+.A-menu .mi.active .kbd { color: rgba(255,255,255,.8); }
+.A-menu .sep { height: 1px; background: #ececec; margin: 5px 0; }
+.A-menu .sub { padding: 4px 14px; font-size: 11px; color: #8e8e93; font-weight: 600; }
+
+/* A — 悬浮窗（在桌面浮窗预览） */
+.A-float-mock {
+  height: 200px; background: #f5f5f7;
+  background-image: linear-gradient(135deg, #f0f0f3, #e8e8ec);
+  border-radius: 12px; position: relative; overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.04);
+}
+.A-float {
+  position: absolute; right: 24px; bottom: 24px;
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.6));
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 50px;
+  backdrop-filter: blur(18px);
+}
+.A-float-num {
+  position: absolute; top: -6px; right: -6px;
+  background: #5E5CE6; color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 7px; border-radius: 999px;
+}
+
+/* A — 锁屏预览 */
+.A-mask {
+  height: 220px; border-radius: 12px; overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 30% 40%, #2c2c2e 0, #1c1c1e 70%),
+    #1c1c1e;
+}
+.A-mask .frost { position: absolute; inset: 0; backdrop-filter: blur(20px); }
+.A-mask .br {
+  position: absolute; right: 18px; bottom: 16px; text-align: right; color: white;
+}
+.A-mask .br .clock { font-size: 38px; font-weight: 200; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.A-mask .br .date  { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 4px; }
+.A-mask .br .task  { font-size: 13px; color: rgba(255,255,255,.92); margin-top: 4px; max-width: 220px; }
+
+/* =========================================================
+   风格 B · 治愈系暖橘 / 萌宠陪伴
+   ========================================================= */
+.B { background: #fff7ec; }
+.B .style-tag { background: #FF8C42; color: white; }
+.B .swatch:nth-child(1) { background: #fff7ec; border: 1px solid #f5dfb5; }
+.B .swatch:nth-child(2) { background: #FF8C42; }
+.B .swatch:nth-child(3) { background: #FFD082; }
+.B .swatch:nth-child(4) { background: #B8E0D2; }
+.B .swatch:nth-child(5) { background: #4F4534; }
+
+.B .window { background: #fffbf3; box-shadow: 0 24px 60px rgba(180,110,30,.18), 0 6px 18px rgba(180,110,30,.08); border: 1.5px solid #f5dfb5; border-radius: 18px; }
+.B .titlebar { background: #ffefdc; border-bottom: 1.5px solid #f5dfb5; }
+
+/* B — 主窗口 */
+.B-main { font-size: 13.5px; color: #4F4534; }
+.B-main .body { display: flex; min-height: 380px; }
+.B-main .sidebar { width: 180px; background: #fff3e0; border-right: 1.5px solid #f5dfb5; padding: 16px 10px; }
+.B-main .who-card {
+  background: white; border-radius: 14px; padding: 12px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(180,110,30,.08);
+}
+.B-main .avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF8C42, #FFD082);
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.B-main .who-card .nm { font-size: 13px; font-weight: 700; }
+.B-main .who-card .sub { font-size: 11px; color: #a08f6f; margin-top: 1px; }
+.B-main .nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 11px; border-radius: 12px; color: #6b5f48;
+  font-weight: 600; font-size: 13.5px; margin-bottom: 2px;
+}
+.B-main .nav-item .ico { font-size: 16px; }
+.B-main .nav-item .badge { margin-left: auto; font-size: 11px; color: #b09e80; font-weight: 700; }
+.B-main .nav-item.active { background: #FF8C42; color: white; box-shadow: 0 4px 12px rgba(255,140,66,.32); }
+.B-main .nav-item.active .badge { color: rgba(255,255,255,.9); }
+
+.B-main .content { flex: 1; padding: 22px 26px; }
+.B-main .h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px; color: #4F4534; letter-spacing: -.2px; }
+.B-main .sub { font-size: 12.5px; color: #a08f6f; margin: 0 0 18px; }
+.B-main .quick {
+  display: flex; gap: 8px; margin-bottom: 22px;
+  background: #fff3e0; padding: 8px; border-radius: 14px;
+  box-shadow: inset 0 1px 3px rgba(180,110,30,.06);
+}
+.B-main .quick input {
+  flex: 1; padding: 10px 14px; border: 0;
+  border-radius: 10px; font-size: 13.5px; outline: none;
+  background: white; color: #4F4534;
+  box-shadow: 0 1px 3px rgba(180,110,30,.06);
+}
+.B-main .pri-btn {
+  padding: 10px 18px; border-radius: 10px; background: #FF8C42;
+  color: white; border: 0; font-weight: 700; font-size: 13.5px;
+  cursor: pointer; box-shadow: 0 4px 10px rgba(255,140,66,.3);
+}
+.B-main .row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; margin-bottom: 8px;
+  background: white; border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(180,110,30,.06);
+}
+.B-main .check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid #f5c894; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: white; font-weight: 700;
+}
+.B-main .check.done { background: #FF8C42; border-color: #FF8C42; }
+.B-main .pill {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .3px;
+  margin-right: 6px;
+}
+.B-main .p0 { background: #ffd9da; color: #c0392b; }
+.B-main .p1 { background: #ffe7c0; color: #b75e00; }
+.B-main .p2 { background: #d5ecdc; color: #2e7d32; }
+.B-main .row-text { flex: 1; font-size: 13.5px; color: #4F4534; }
+.B-main .row-text.done { text-decoration: line-through; color: #c1ad8a; }
+.B-main .who { color: #a08f6f; font-size: 11.5px; }
+.B-main .when { font-size: 11px; color: #b09e80; }
+
+/* B — 统计 */
+.B-stats { font-size: 13.5px; color: #4F4534; }
+.B-stats .body { padding: 22px 26px; }
+.B-stats .stat-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px;
+  background: linear-gradient(135deg, #fff7ec, #ffe7c0);
+  border-radius: 16px; padding: 18px 20px;
+}
+.B-stats .greet-line { font-size: 13px; color: #6b5f48; margin: 0 0 6px; font-weight: 600; }
+.B-stats .greet-emoji { font-size: 22px; margin-right: 4px; }
+.B-stats .big-num { font-size: 50px; font-weight: 800; color: #FF8C42; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; text-shadow: 0 2px 0 rgba(255,140,66,.18); }
+.B-stats .small-cap { font-size: 11.5px; color: #a08f6f; margin-top: 4px; font-weight: 600; }
+.B-stats .section-h { font-size: 12px; font-weight: 800; color: #6b5f48; letter-spacing: 1px; margin: 4px 0 10px; text-transform: uppercase; }
+.B-stats .key-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; margin-bottom: 4px; background: white; border-radius: 12px; box-shadow: 0 2px 5px rgba(180,110,30,.05); }
+.B-stats .medal { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
+.B-stats .medal.r1 { background: linear-gradient(135deg, #FFD700, #F39C12); }
+.B-stats .medal.r2 { background: linear-gradient(135deg, #C0C0C0, #95A5A6); }
+.B-stats .medal.r3 { background: linear-gradient(135deg, #CD7F32, #B8693C); }
+.B-stats .medal.rN { background: linear-gradient(135deg, #FFB780, #FF8C42); }
+.B-stats .key-name { width: 80px; font-weight: 700; font-size: 13.5px; }
+.B-stats .key-bar { flex: 1; height: 10px; background: #fff3e0; border-radius: 5px; overflow: hidden; }
+.B-stats .key-bar > i { display: block; height: 100%; background: linear-gradient(90deg, #FF8C42, #FFD082); border-radius: 5px; }
+.B-stats .key-cnt { font-size: 12px; color: #a08f6f; font-weight: 700; font-variant-numeric: tabular-nums; }
+.B-stats .chart { margin-top: 18px; height: 120px; background: white; border-radius: 14px; padding: 12px 14px; display: flex; align-items: flex-end; gap: 3px; box-shadow: inset 0 1px 4px rgba(180,110,30,.05); }
+.B-stats .bar { flex: 1; background: linear-gradient(180deg, #FFD082, #FF8C42); border-radius: 3px 3px 0 0; opacity: .6; }
+.B-stats .bar.peak { opacity: 1; }
+.B-stats .bar.today { background: linear-gradient(180deg, #6FCF97, #2E7D6B); opacity: 1; }
+
+/* B — 菜单栏 */
+.B-menu {
+  width: 290px; border-radius: 18px; overflow: hidden;
+  background: #fffbf3;
+  box-shadow: 0 16px 40px rgba(180,110,30,.22);
+  font-size: 13.5px; padding: 8px 0;
+  border: 1.5px solid #f5dfb5;
+  color: #4F4534;
+}
+.B-menu .mi { display: flex; align-items: center; padding: 8px 16px; gap: 10px; }
+.B-menu .mi:hover, .B-menu .mi.active { background: #fff3e0; }
+.B-menu .mi.featured { background: linear-gradient(90deg, #fff3e0, #ffe7c0); font-weight: 700; }
+.B-menu .mi .ico { font-size: 16px; }
+.B-menu .mi .kbd {
+  margin-left: auto; font-size: 10.5px; color: #b09e80; font-weight: 600;
+  background: white; padding: 2px 7px; border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(180,110,30,.08);
+}
+.B-menu .sep { height: 1.5px; background: #f5dfb5; margin: 6px 14px; }
+.B-menu .header-row { padding: 6px 16px 10px; border-bottom: 1.5px dashed #f5dfb5; margin-bottom: 6px; }
+.B-menu .header-row .nm { font-size: 13.5px; font-weight: 800; }
+.B-menu .header-row .sub { font-size: 11px; color: #a08f6f; margin-top: 1px; }
+
+/* B — 悬浮 */
+.B-float-mock {
+  height: 200px;
+  background:
+    radial-gradient(ellipse at 70% 70%, #ffe7c0 0%, #ffefdc 60%);
+  border-radius: 16px; position: relative; overflow: hidden;
+  border: 1.5px solid #f5dfb5;
+}
+.B-float {
+  position: absolute; right: 22px; bottom: 22px;
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #FFD082;
+  box-shadow: 0 8px 22px rgba(255,140,66,.22);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 56px;
+}
+.B-float-badge {
+  position: absolute; top: -4px; right: -2px;
+  background: #FF8C42; color: white;
+  font-size: 11px; font-weight: 800;
+  padding: 4px 8px; border-radius: 999px;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(255,140,66,.4);
+}
+.B-float-tail {
+  position: absolute; right: 110px; bottom: 18px;
+  background: white; border: 1.5px solid #f5dfb5; border-radius: 14px;
+  padding: 10px 14px; font-size: 12px; color: #6b5f48;
+  box-shadow: 0 4px 14px rgba(180,110,30,.12);
+}
+.B-float-tail::after {
+  content: ''; position: absolute; right: -8px; bottom: 18px;
+  width: 0; height: 0;
+  border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+  border-left: 8px solid white;
+}
+
+/* B — 锁屏 */
+.B-mask {
+  height: 220px; border-radius: 16px; overflow: hidden;
+  position: relative;
+  background:
+    linear-gradient(135deg, #4a2f1a 0%, #2c1810 100%);
+}
+.B-mask::before {
+  content: '🐈'; position: absolute; left: 24px; top: 18px;
+  font-size: 28px; opacity: .35;
+}
+.B-mask .br {
+  position: absolute; right: 18px; bottom: 16px; text-align: right; color: #ffe7c0;
+}
+.B-mask .br .clock { font-size: 38px; font-weight: 300; line-height: 1; font-variant-numeric: tabular-nums; }
+.B-mask .br .date  { font-size: 11px; color: rgba(255,231,192,.7); margin-top: 4px; font-weight: 600; }
+.B-mask .br .task  { font-size: 13px; color: rgba(255,231,192,.95); margin-top: 4px; }
+
+/* footer */
+footer { padding: 24px; text-align: center; color: #8e8e93; font-size: 12px; background: white; border-top: 1px solid #d8d9dd; }
+footer kbd { background: #f5f5f7; border-radius: 4px; padding: 2px 6px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>LazyCat · UI 原型 v2 · 两套风格 PK</h1>
+  <p>左右各一套，挑一套 → 我把整个 app 改成那种风格</p>
+</div>
+
+<div class="split">
+  <!-- ╔════════════════════════════════════════════════ STYLE A ════════════════════════════════════════════════╗ -->
+  <div class="col A">
+    <div class="style-tag">STYLE A</div>
+    <h2 class="style-name">极简现代 · macOS Native</h2>
+    <p class="style-pitch">克制、专业、信息密度高。灵感：Things 3、Linear、Notion。<br>主色一抹深紫，黑白为骨，让用户专注内容。</p>
+    <div class="palette">
+      <div class="swatch" title="bg #fff"></div>
+      <div class="swatch" title="surface #f5f5f7"></div>
+      <div class="swatch" title="text #1d1d1f"></div>
+      <div class="swatch" title="accent #5E5CE6"></div>
+      <div class="swatch" title="success #34c759"></div>
+    </div>
+
+    <div class="section-label">主窗口 · 任务列表</div>
+    <div class="window A-main">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">LazyCat</span>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="sidebar-title">清单</div>
+          <div class="nav-item active"><span class="ico">📥</span>收件箱<span class="badge">7</span></div>
+          <div class="nav-item"><span class="ico">⭐️</span>今日<span class="badge">3</span></div>
+          <div class="nav-item"><span class="ico">🔥</span>本周<span class="badge">12</span></div>
+          <div class="sidebar-title">人</div>
+          <div class="nav-item"><span class="ico">👤</span>张伟<span class="badge">4</span></div>
+          <div class="nav-item"><span class="ico">👤</span>李娜<span class="badge">2</span></div>
+          <div class="nav-item"><span class="ico">👤</span>王磊<span class="badge">1</span></div>
+        </div>
+        <div class="content">
+          <h2 class="h1">收件箱</h2>
+          <p class="sub">7 个未完成 · 12 个本周完成</p>
+          <div class="quick">
+            <input placeholder="键入新任务，回车保存…" />
+            <button class="pri-btn">＋ 新建</button>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="row-text">
+              <span class="pill p0">T0</span>定 release 排期 · 周五前 ship<span class="who"> · 张伟</span>
+            </div>
+            <div class="when">今天</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="row-text">
+              <span class="pill p1">T1</span>跟设计 review 锁屏方案<span class="who"> · 李娜</span>
+            </div>
+            <div class="when">明天</div>
+          </div>
+          <div class="row">
+            <div class="check done">✓</div>
+            <div class="row-text done">
+              <span class="pill p2">T2</span>整理周报模板<span class="who"> · 王磊</span>
+            </div>
+            <div class="when">已完成</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="row-text">
+              <span class="pill p1">T1</span>提测：打字统计 + Look My 警告<span class="who"> · 张伟</span>
+            </div>
+            <div class="when">5/3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">打字统计 · 30 天数据</div>
+    <div class="window A-stats">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">打字统计</span>
+      </div>
+      <div class="body">
+        <div class="stat-top">
+          <div>
+            <p class="greet">今日</p>
+            <p class="h-title">打字行为统计</p>
+          </div>
+          <div style="text-align:right">
+            <div class="big-num">11,616</div>
+            <div class="small-cap">总按键 · 比昨天 +1,241</div>
+          </div>
+        </div>
+        <div class="section-h">最近 30 天 · TOP 5 按键</div>
+        <div class="key-row"><div class="key-rank">#1</div><div class="key-name">空格</div><div class="key-bar"><i style="width:100%"></i></div><div class="key-cnt">1,250 次</div></div>
+        <div class="key-row"><div class="key-rank">#2</div><div class="key-name">⌫ Delete</div><div class="key-bar"><i style="width:78%"></i></div><div class="key-cnt">982 次</div></div>
+        <div class="key-row"><div class="key-rank">#3</div><div class="key-name">A</div><div class="key-bar"><i style="width:52%"></i></div><div class="key-cnt">650 次</div></div>
+        <div class="key-row"><div class="key-rank">#4</div><div class="key-name">I</div><div class="key-bar"><i style="width:48%"></i></div><div class="key-cnt">605 次</div></div>
+        <div class="key-row"><div class="key-rank">#5</div><div class="key-name">N</div><div class="key-bar"><i style="width:40%"></i></div><div class="key-cnt">503 次</div></div>
+        <div class="section-h" style="margin-top:18px">每日总按键</div>
+        <div class="chart">
+          <div class="bar" style="height:35%"></div><div class="bar" style="height:42%"></div>
+          <div class="bar" style="height:55%"></div><div class="bar" style="height:48%"></div>
+          <div class="bar" style="height:60%"></div><div class="bar" style="height:38%"></div>
+          <div class="bar" style="height:30%"></div><div class="bar" style="height:50%"></div>
+          <div class="bar" style="height:62%"></div><div class="bar peak" style="height:88%"></div>
+          <div class="bar" style="height:65%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:48%"></div><div class="bar" style="height:42%"></div>
+          <div class="bar" style="height:58%"></div><div class="bar" style="height:70%"></div>
+          <div class="bar" style="height:62%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:48%"></div><div class="bar" style="height:42%"></div>
+          <div class="bar" style="height:35%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:60%"></div><div class="bar" style="height:50%"></div>
+          <div class="bar" style="height:45%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:65%"></div><div class="bar" style="height:60%"></div>
+          <div class="bar" style="height:70%"></div><div class="bar today" style="height:78%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">菜单栏下拉</div>
+    <div class="A-menu">
+      <div class="mi"><span class="ico">📋</span>打开主窗口<span class="kbd">⌘O</span></div>
+      <div class="mi"><span class="ico">＋</span>新建事件<span class="kbd">⌘N</span></div>
+      <div class="sep"></div>
+      <div class="mi active"><span class="ico">🐈</span>桌面悬浮窗<span class="kbd">已开</span></div>
+      <div class="mi"><span class="ico">🔒</span>专注遮罩<span class="kbd">⌥1</span></div>
+      <div class="sep"></div>
+      <div class="sub">今日打字 11,616 次</div>
+      <div class="mi"><span class="ico">📊</span>打字统计 / 30 日图表</div>
+      <div class="sep"></div>
+      <div class="mi"><span class="ico">ℹ️</span>关于 LazyCat</div>
+      <div class="mi"><span class="ico">🚪</span>退出<span class="kbd">⌘Q</span></div>
+    </div>
+
+    <div class="section-label">桌面悬浮窗（玻璃感）</div>
+    <div class="A-float-mock">
+      <div class="A-float">🐈
+        <span class="A-float-num">128</span>
+      </div>
+    </div>
+
+    <div class="section-label">锁屏遮罩（右下角时钟）</div>
+    <div class="A-mask">
+      <div class="frost"></div>
+      <div class="br">
+        <div class="clock">14:23</div>
+        <div class="date">2026 年 5 月 1 日 周五</div>
+        <div class="task">🔴 T0 · 定 release 排期 · 周五前 ship</div>
+      </div>
+    </div>
+
+  </div>
+  <!-- ╚════════════════════════════════════════════════ STYLE A ════════════════════════════════════════════════╝ -->
+
+
+  <!-- ╔════════════════════════════════════════════════ STYLE B ════════════════════════════════════════════════╗ -->
+  <div class="col B">
+    <div class="style-tag">STYLE B</div>
+    <h2 class="style-name">治愈系暖橘 · 萌宠陪伴</h2>
+    <p class="style-pitch">温暖、有人情味、有性格。灵感：滴答清单、Habitica、Stardew Valley。<br>大圆角 + 奶油底色 + 橘猫主色，像养了一只会陪你打字的猫。</p>
+    <div class="palette">
+      <div class="swatch" title="bg #fff7ec"></div>
+      <div class="swatch" title="accent #FF8C42"></div>
+      <div class="swatch" title="butter #FFD082"></div>
+      <div class="swatch" title="mint #B8E0D2"></div>
+      <div class="swatch" title="text #4F4534"></div>
+    </div>
+
+    <div class="section-label">主窗口 · 任务列表</div>
+    <div class="window B-main">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">LazyCat 🐈</span>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="who-card">
+            <div class="avatar">🐈</div>
+            <div>
+              <div class="nm">小懒猫</div>
+              <div class="sub">连续 8 天 · 11,616 键</div>
+            </div>
+          </div>
+          <div class="nav-item active"><span class="ico">📥</span>收件箱<span class="badge">7</span></div>
+          <div class="nav-item"><span class="ico">🌟</span>今日<span class="badge">3</span></div>
+          <div class="nav-item"><span class="ico">🔥</span>本周<span class="badge">12</span></div>
+          <div class="nav-item"><span class="ico">✅</span>已完成<span class="badge">42</span></div>
+        </div>
+        <div class="content">
+          <h2 class="h1">早上好 ☀️</h2>
+          <p class="sub">7 个待办 · 喝口水再开始吧</p>
+          <div class="quick">
+            <input placeholder="今天要做点什么？" />
+            <button class="pri-btn">🐾 添加</button>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="row-text">
+              <span class="pill p0">T0</span>定 release 排期 · 周五前 ship<span class="who"> 👤 张伟</span>
+            </div>
+            <div class="when">今天</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="row-text">
+              <span class="pill p1">T1</span>跟设计 review 锁屏方案<span class="who"> 👤 李娜</span>
+            </div>
+            <div class="when">明天</div>
+          </div>
+          <div class="row">
+            <div class="check done">✓</div>
+            <div class="row-text done">
+              <span class="pill p2">T2</span>整理周报模板<span class="who"> 👤 王磊</span>
+            </div>
+            <div class="when">完成 🎉</div>
+          </div>
+          <div class="row">
+            <div class="check"></div>
+            <div class="row-text">
+              <span class="pill p1">T1</span>提测：打字统计 + Look My 警告<span class="who"> 👤 张伟</span>
+            </div>
+            <div class="when">5/3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">打字统计 · 30 天数据</div>
+    <div class="window B-stats">
+      <div class="titlebar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="title-text">🐈 打字统计 · 30 天</span>
+      </div>
+      <div class="body">
+        <div class="stat-top">
+          <div>
+            <p class="greet-line"><span class="greet-emoji">🐾</span>今天打了好多字呀</p>
+            <div class="small-cap">比昨天多 1,241 次 · 加油加油！</div>
+          </div>
+          <div style="text-align:right">
+            <div class="big-num">11,616</div>
+          </div>
+        </div>
+        <div class="section-h">🏆 最近 30 天 · TOP 5</div>
+        <div class="key-row"><div class="medal r1">1</div><div class="key-name">空格</div><div class="key-bar"><i style="width:100%"></i></div><div class="key-cnt">1,250</div></div>
+        <div class="key-row"><div class="medal r2">2</div><div class="key-name">⌫ Delete</div><div class="key-bar"><i style="width:78%"></i></div><div class="key-cnt">982</div></div>
+        <div class="key-row"><div class="medal r3">3</div><div class="key-name">A</div><div class="key-bar"><i style="width:52%"></i></div><div class="key-cnt">650</div></div>
+        <div class="key-row"><div class="medal rN">4</div><div class="key-name">I</div><div class="key-bar"><i style="width:48%"></i></div><div class="key-cnt">605</div></div>
+        <div class="key-row"><div class="medal rN">5</div><div class="key-name">N</div><div class="key-bar"><i style="width:40%"></i></div><div class="key-cnt">503</div></div>
+        <div class="section-h" style="margin-top:18px">📊 每日总按键</div>
+        <div class="chart">
+          <div class="bar" style="height:35%"></div><div class="bar" style="height:42%"></div>
+          <div class="bar" style="height:55%"></div><div class="bar" style="height:48%"></div>
+          <div class="bar" style="height:60%"></div><div class="bar" style="height:38%"></div>
+          <div class="bar" style="height:30%"></div><div class="bar" style="height:50%"></div>
+          <div class="bar" style="height:62%"></div><div class="bar peak" style="height:88%"></div>
+          <div class="bar" style="height:65%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:48%"></div><div class="bar" style="height:42%"></div>
+          <div class="bar" style="height:58%"></div><div class="bar" style="height:70%"></div>
+          <div class="bar" style="height:62%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:48%"></div><div class="bar" style="height:42%"></div>
+          <div class="bar" style="height:35%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:60%"></div><div class="bar" style="height:50%"></div>
+          <div class="bar" style="height:45%"></div><div class="bar" style="height:55%"></div>
+          <div class="bar" style="height:65%"></div><div class="bar" style="height:60%"></div>
+          <div class="bar" style="height:70%"></div><div class="bar today" style="height:78%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">菜单栏下拉</div>
+    <div class="B-menu">
+      <div class="header-row">
+        <div class="nm">🐈 LazyCat 在守候</div>
+        <div class="sub">今日 11,616 键 · 连续 8 天</div>
+      </div>
+      <div class="mi"><span class="ico">📋</span>打开主窗口<span class="kbd">⌘O</span></div>
+      <div class="mi"><span class="ico">＋</span>新建事件<span class="kbd">⌘N</span></div>
+      <div class="sep"></div>
+      <div class="mi active"><span class="ico">🐾</span>桌面悬浮窗<span class="kbd">已开</span></div>
+      <div class="mi featured"><span class="ico">🔒</span>专注遮罩<span class="kbd">⌥1</span></div>
+      <div class="sep"></div>
+      <div class="mi"><span class="ico">📊</span>打字统计 / 排行 / 30 日图表</div>
+      <div class="sep"></div>
+      <div class="mi"><span class="ico">ℹ️</span>关于 LazyCat</div>
+      <div class="mi"><span class="ico">🚪</span>退出<span class="kbd">⌘Q</span></div>
+    </div>
+
+    <div class="section-label">桌面悬浮窗（带气泡）</div>
+    <div class="B-float-mock">
+      <div class="B-float-tail">喵～ 已经敲了 128 个字啦</div>
+      <div class="B-float">🐈
+        <span class="B-float-badge">128</span>
+      </div>
+    </div>
+
+    <div class="section-label">锁屏遮罩（暖色调）</div>
+    <div class="B-mask">
+      <div class="br">
+        <div class="clock">14:23</div>
+        <div class="date">2026 年 5 月 1 日 周五</div>
+        <div class="task">🔴 T0 · 定 release 排期 · 周五前 ship</div>
+      </div>
+    </div>
+
+  </div>
+  <!-- ╚════════════════════════════════════════════════ STYLE B ════════════════════════════════════════════════╝ -->
+</div>
+
+<footer>
+  挑一套告诉我（A 还是 B），我把整个 app（主窗口 / 统计 / 菜单 / 悬浮 / 锁屏）按那套风格全改一遍。
+  <br>路径：<kbd>MyTodoApp/docs/ui-prototype-v2.html</kbd>
+</footer>
+
+</body>
+</html>

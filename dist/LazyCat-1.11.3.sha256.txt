@@ -1,0 +1,3 @@
+ba97f6d2dde4a7af474d2e4545c6bcf22277617ed7ec1dc139ecd2df3e034f46  LazyCat-1.11.3.zip
+79eeea74117e91eea98713b5925fe358db2dedf887c5c709684518f0797b4393  LazyCat-1.11.3.tar.gz
+fc8468c8bf3b91b7f951f6e5993568f1ada7ac95a72da62d4afdfbefefddb40a  LazyCat-1.11.3.dmg
