@@ -165,10 +165,10 @@ final class TGInboxView: NSView {
 
     private let batchBar = NSView()
     private let batchCount = NSTextField(labelWithString: "0")
-    private let batchLabel = NSTextField(labelWithString: "已选 / 共 0")
+    private let batchLabel = NSTextField(labelWithString: "已选")
     private let batchSelectAll = NSButton(title: "全选", target: nil, action: nil)
     private var batchActionButtons: [NSButton] = []
-    /// batchBar 动态高度:正常 36,!batchMode 时收为 0(不再占空白)
+    /// batchBar 动态高度:正常 40,!batchMode 时收为 0(不再占空白)
     private var batchBarHeight: NSLayoutConstraint!
 
     private let pager = NSView()
@@ -313,7 +313,7 @@ final class TGInboxView: NSView {
         batchBar.translatesAutoresizingMaskIntoConstraints = false
         batchBar.isHidden = true
         addSubview(batchBar)
-        // 动态高度:!batchMode 收 0,batchMode 36
+        // 动态高度:!batchMode 收 0,batchMode 40
         batchBarHeight = batchBar.heightAnchor.constraint(equalToConstant: 0)
         batchBarHeight.isActive = true
 
@@ -335,8 +335,9 @@ final class TGInboxView: NSView {
         batchCount.translatesAutoresizingMaskIntoConstraints = false
         batchBar.addSubview(batchCount)
 
-        batchLabel.font = LazyCatTheme.body(11, weight: .medium)
+        batchLabel.font = LazyCatTheme.body(10.5, weight: .medium)
         batchLabel.textColor = LazyCatTheme.tx2
+        batchLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         batchLabel.translatesAutoresizingMaskIntoConstraints = false
         batchBar.addSubview(batchLabel)
 
@@ -345,15 +346,15 @@ final class TGInboxView: NSView {
                           action: #selector(actBatchSelectAll))
         batchBar.addSubview(batchSelectAll)
 
-        // 已读 / 转任务 / 删除
-        let actions: [(String, NSColor, Selector)] = [
-            ("✓ 已读",  LazyCatTheme.tx1,    #selector(actBatchMarkRead)),
-            ("＋ 转任务", LazyCatTheme.accent, #selector(actBatchConvert)),
-            ("🗑 删除",   LazyCatTheme.red,   #selector(actBatchDelete)),
+        // 已读 / 转任务 / 删除 — 字号缩小到 10.5，固定宽防止截断
+        let actions: [(String, NSColor, Selector, CGFloat)] = [
+            ("已读",  LazyCatTheme.tx2,    #selector(actBatchMarkRead),  40),
+            ("转任务", LazyCatTheme.accent, #selector(actBatchConvert),   52),
+            ("删除",   LazyCatTheme.red,   #selector(actBatchDelete),    40),
         ]
-        for (t, c, sel) in actions {
+        for (t, c, sel, w) in actions {
             let b = NSButton(title: t, target: self, action: sel)
-            styleBatchActionBtn(b, title: t, color: c)
+            styleBatchActionBtn(b, title: t, color: c, width: w)
             batchBar.addSubview(b)
             batchActionButtons.append(b)
         }
@@ -515,12 +516,13 @@ final class TGInboxView: NSView {
             gearBtn.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
         ])
 
-        // 批量按钮栏右侧布局:从右到左 [esc, divider, 删除, 转任务, 已读]
-        let trailingPad: CGFloat = 10
+        // 批量按钮栏右侧布局:从右到左 [完成 | divider | 删除 转任务 已读]
+        let trailingPad: CGFloat = 8
         NSLayoutConstraint.activate([
             escBtn.trailingAnchor.constraint(equalTo: batchBar.trailingAnchor, constant: -trailingPad),
             escBtn.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
             escBtn.heightAnchor.constraint(equalToConstant: 22),
+            escBtn.widthAnchor.constraint(equalToConstant: 52),
 
             escDivider.trailingAnchor.constraint(equalTo: escBtn.leadingAnchor, constant: -6),
             escDivider.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
@@ -529,10 +531,16 @@ final class TGInboxView: NSView {
         ])
         var prev: NSView = escDivider
         for b in batchActionButtons.reversed() {
-            b.trailingAnchor.constraint(equalTo: prev.leadingAnchor, constant: -2).isActive = true
+            b.trailingAnchor.constraint(equalTo: prev.leadingAnchor, constant: -4).isActive = true
             b.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor).isActive = true
-            b.heightAnchor.constraint(equalToConstant: 24).isActive = true
+            b.heightAnchor.constraint(equalToConstant: 22).isActive = true
             prev = b
+        }
+        // ★ 防止左侧标签组和右侧按钮组重叠 — 全选按钮右边缘 ≤ 最左侧动作按钮左边缘
+        if let leftmost = batchActionButtons.first {
+            batchSelectAll.trailingAnchor.constraint(
+                lessThanOrEqualTo: leftmost.leadingAnchor, constant: -6
+            ).isActive = true
         }
     }
 
@@ -561,20 +569,24 @@ final class TGInboxView: NSView {
 
     /// 批量栏按钮 .bbtn:padding 5×9, 圆角 5, 字 11.5/600,默认透明背景
     /// padding 用左右空格做(NSButton 没 contentInsets)
-    private func styleBatchActionBtn(_ b: NSButton, title: String, color: NSColor) {
-        let padded = " \(title) "
+    private func styleBatchActionBtn(_ b: NSButton, title: String, color: NSColor, width: CGFloat = 48) {
         b.bezelStyle = .regularSquare
         b.isBordered = false
         b.focusRingType = .none
-        b.title = padded
-        b.attributedTitle = NSAttributedString(string: padded, attributes: [
-            .foregroundColor: color,
-            .font: LazyCatTheme.body(11.5, weight: .semibold),
-        ])
         b.wantsLayer = true
-        b.layer?.cornerRadius = 5
-        b.layer?.backgroundColor = NSColor.clear.cgColor
+        b.layer?.cornerRadius = 4
+        b.layer?.backgroundColor = color.withAlphaComponent(0.10).cgColor
+        b.layer?.borderWidth = 0.5
+        b.layer?.borderColor = color.withAlphaComponent(0.3).cgColor
+        let ps = NSMutableParagraphStyle()
+        ps.alignment = .center
+        b.attributedTitle = NSAttributedString(string: title, attributes: [
+            .foregroundColor: color,
+            .font: LazyCatTheme.body(10.5, weight: .semibold),
+            .paragraphStyle: ps,
+        ])
         b.translatesAutoresizingMaskIntoConstraints = false
+        b.widthAnchor.constraint(equalToConstant: width).isActive = true
     }
 
     // MARK: - 数据 / 渲染
@@ -752,7 +764,7 @@ final class TGInboxView: NSView {
 
         // 批量栏(N / 共 M 用"组"维度,与用户实际看到的卡片数一致)
         batchBar.isHidden = !batchMode
-        batchBarHeight.constant = batchMode ? 36 : 0
+        batchBarHeight.constant = batchMode ? 40 : 0
         let selectedGroupCount = entries.filter { e in
             e.mergedIds.contains(where: { selectedIds.contains($0) })
         }.count
@@ -762,7 +774,7 @@ final class TGInboxView: NSView {
                 .foregroundColor: NSColor.white,
                 .font: LazyCatTheme.body(10.5, weight: .bold),
             ])
-        batchLabel.stringValue = "已选 / 共 \(total)"
+        batchLabel.stringValue = "已选 / \(total)"
 
         // 翻页栏:设计图 ‹ 1 2 [3] 4 … N › ── 当前页用 accent 实心,其余透明
         // 清掉旧的按钮和数字 label(保留 pagerInfoLbl 和分割线)
