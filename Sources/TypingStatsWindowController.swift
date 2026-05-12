@@ -49,8 +49,11 @@ private final class TypingStatsView: NSView {
     private let chartView       = DailyBarChartView()
 
     // 操作按钮
-    private let refreshBtn = NSButton(title: "刷新", target: nil, action: nil)
-    private let clearBtn   = NSButton(title: "清空全部历史", target: nil, action: nil)
+    private let refreshBtn      = NSButton(title: "刷新", target: nil, action: nil)
+    private let clearBtn        = NSButton(title: "清空全部历史", target: nil, action: nil)
+    // 权限状态
+    private let permStatusLbl   = NSTextField(labelWithString: "")
+    private let resetPermBtn    = NSButton(title: "重置权限", target: nil, action: nil)
 
     // ★ Style B · 治愈系暖橘 调色板（接 LazyCatTheme）
     fileprivate static let bgColor       = LazyCatTheme.bg                                  // 奶油
@@ -148,6 +151,17 @@ private final class TypingStatsView: NSView {
         clearBtn.translatesAutoresizingMaskIntoConstraints = false
         addSubview(clearBtn)
 
+        // 权限状态标签
+        permStatusLbl.font = LazyCatTheme.body(11, weight: .medium)
+        permStatusLbl.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(permStatusLbl)
+
+        resetPermBtn.target = self
+        resetPermBtn.action = #selector(onResetPerm)
+        resetPermBtn.bezelColor = .systemOrange
+        resetPermBtn.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(resetPermBtn)
+
         // 把 topCard 移到最底层，避免覆盖里面的标签
         if let g = topCard.layer?.sublayers?.first as? CAGradientLayer {
             _ = g  // 引用避免 warning
@@ -187,6 +201,13 @@ private final class TypingStatsView: NSView {
             chartView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -24),
             chartView.topAnchor.constraint(equalTo: chartTitleLabel.bottomAnchor, constant: 8),
             chartView.bottomAnchor.constraint(equalTo: refreshBtn.topAnchor, constant: -16),
+
+            // 权限状态（底部左侧）
+            permStatusLbl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 24),
+            permStatusLbl.bottomAnchor.constraint(equalTo: refreshBtn.topAnchor, constant: -8),
+
+            resetPermBtn.leadingAnchor.constraint(equalTo: permStatusLbl.trailingAnchor, constant: 10),
+            resetPermBtn.centerYAnchor.constraint(equalTo: permStatusLbl.centerYAnchor),
 
             // 按钮
             refreshBtn.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 24),
@@ -230,6 +251,23 @@ private final class TypingStatsView: NSView {
         // 日柱状图
         let daily = counter.dailyCounts(days: 30)
         chartView.setData(daily)
+
+        // 权限状态
+        let state = counter.accessState
+        switch state {
+        case kIOHIDAccessTypeGranted:
+            permStatusLbl.stringValue = "✅ 输入监控已授权"
+            permStatusLbl.textColor = NSColor(red: 0.18, green: 0.49, blue: 0.20, alpha: 1)
+            resetPermBtn.isHidden = true
+        case kIOHIDAccessTypeDenied:
+            permStatusLbl.stringValue = "❌ 输入监控被拒 — 计数器失效"
+            permStatusLbl.textColor = NSColor.systemRed
+            resetPermBtn.isHidden = false
+        default:
+            permStatusLbl.stringValue = "⚠️ 输入监控未授权"
+            permStatusLbl.textColor = NSColor.systemOrange
+            resetPermBtn.isHidden = false
+        }
     }
 
     override func layout() {
@@ -241,6 +279,10 @@ private final class TypingStatsView: NSView {
     }
 
     @objc private func onRefresh() { reload() }
+
+    @objc private func onResetPerm() {
+        KeyTypingCounter.shared.resetTCCAndRequest()
+    }
 
     @objc private func onClearAll() {
         let alert = NSAlert()

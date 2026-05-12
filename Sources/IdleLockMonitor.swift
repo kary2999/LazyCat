@@ -30,6 +30,16 @@ final class IdleLockMonitor {
     private func tick() {
         let s = AutoLockSettings.shared
         guard s.isEnabled else { return }
+
+        // 工作时段限制：不在工作时间内则自动解除遮罩（如果已经显示）
+        if !s.isInWorkHours {
+            if FullscreenMaskController.shared.isShown {
+                AppLog.log("IdleLockMonitor: 当前不在工作时段，自动解除遮罩")
+                FullscreenMaskController.shared.hide()
+            }
+            return
+        }
+
         // 已经在锁屏里了不重复触发
         if FullscreenMaskController.shared.isShown { return }
 
