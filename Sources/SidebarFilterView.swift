@@ -37,24 +37,9 @@ final class SidebarFilterView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func build() {
-        // 固定暖橙底色（不随系统 dark mode 飘色）
-        vibrancy.material = .sidebar
-        vibrancy.blendingMode = .behindWindow
-        vibrancy.state = .followsWindowActiveState
-        vibrancy.translatesAutoresizingMaskIntoConstraints = false
-        // 用实色遮住 vibrancy，保持治愈系配色
-        let solidBg = NSView()
-        solidBg.wantsLayer = true
-        solidBg.layer?.backgroundColor = LazyCatTheme.bgSoft.cgColor
-        solidBg.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(vibrancy)
-        addSubview(solidBg)
-        NSLayoutConstraint.activate([
-            solidBg.topAnchor.constraint(equalTo: topAnchor),
-            solidBg.leadingAnchor.constraint(equalTo: leadingAnchor),
-            solidBg.trailingAnchor.constraint(equalTo: trailingAnchor),
-            solidBg.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
+        // 固定 bgSoft 实色底，不用 vibrancy（避免跟随系统深色模式飘色）
+        wantsLayer = true
+        layer?.backgroundColor = LazyCatTheme.bgSoft.cgColor
 
         // 搜索框
         searchField.placeholderString = "搜索 任务 / @人"
@@ -87,7 +72,7 @@ final class SidebarFilterView: NSView {
 
         // 底部 footer 信息条（双击 → 打字排行）
         footerStrip.wantsLayer = true
-        footerStrip.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.03).cgColor
+        footerStrip.layer?.backgroundColor = LazyCatTheme.border1.withAlphaComponent(0.4).cgColor
         footerStrip.translatesAutoresizingMaskIntoConstraints = false
         addSubview(footerStrip)
 
