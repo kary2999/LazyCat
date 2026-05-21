@@ -62,6 +62,9 @@ final class ContentViewController: NSViewController {
         tgInbox.onConvertToTask = { [weak self] item in
             self?.convertTGToTask(item)
         }
+        tgInbox.onBatchConvert = { [weak self] items in
+            self?.convertTGToTaskBatch(items)
+        }
         tgInbox.onOpenSettings = { [weak self] in
             self?.openTGSettings()
         }
@@ -180,11 +183,11 @@ final class ContentViewController: NSViewController {
             div3.trailingAnchor.constraint(equalTo: tgInbox.leadingAnchor),
             div3.widthAnchor.constraint(equalToConstant: 0.5),
 
-            // tg inbox（最右第 4 栏，280pt 宽）
+            // tg inbox（最右第 4 栏，330pt 宽）
             tgInbox.topAnchor.constraint(equalTo: outer.topAnchor),
             tgInbox.trailingAnchor.constraint(equalTo: outer.trailingAnchor),
             tgInbox.bottomAnchor.constraint(equalTo: outer.bottomAnchor),
-            tgInbox.widthAnchor.constraint(equalToConstant: 280),
+            tgInbox.widthAnchor.constraint(equalToConstant: 330),
         ])
 
         // mid pane 内部约束
@@ -412,7 +415,7 @@ final class ContentViewController: NSViewController {
         presentAsSheet(vc)
     }
 
-    private func convertTGToTask(_ item: InboxMessage) {
+    private func convertTGToTask(_ item: InboxMessage, skipDismiss: Bool = false) {
         // 图片 import 进 images/(若有)
         var savedImage: String? = nil
         if let p = item.imageLocalPath, let img = NSImage(contentsOfFile: p),
@@ -455,7 +458,14 @@ final class ContentViewController: NSViewController {
             Store.shared.addTaskRaw(t)
         }
         Store.shared.rememberPerson(item.senderName)
-        TelegramTDLib.shared.dismiss(item.id)
+        if !skipDismiss { TelegramTDLib.shared.dismiss(item.id) }
+    }
+
+    /// 批量转任务：逐条建任务（带 24h 合并逻辑）后一次性 dismissBatch，只触发一次 inboxDidChange
+    func convertTGToTaskBatch(_ items: [InboxMessage]) {
+        for it in items { convertTGToTask(it, skipDismiss: true) }
+        let ids = Set(items.map { $0.id })
+        TelegramTDLib.shared.dismissBatch(ids: ids)
     }
 
     /// 键盘上下移动选中

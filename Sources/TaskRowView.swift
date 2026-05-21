@@ -127,9 +127,8 @@ final class TaskRowView: NSTableCellView {
                 ])
         } else {
             titleLabel.stringValue = titleText
-            // 加粗一点，确保 Light/Dark 两种模式下都清晰
-            titleLabel.font = .systemFont(ofSize: 13.5, weight: .medium)
-            titleLabel.textColor = .labelColor
+            titleLabel.font = LazyCatTheme.body(13.5, weight: .medium)
+            titleLabel.textColor = LazyCatTheme.tx1
         }
         titleLabel.maximumNumberOfLines = 1
         titleLabel.lineBreakMode = .byTruncatingTail
@@ -145,8 +144,8 @@ final class TaskRowView: NSTableCellView {
         let personStr = task.person.isEmpty ? "@未指定（点击补填）" : "@\(task.person)"
         let full = personStr + "  ·  " + tail.joined(separator: "  ·  ")
         let attr = NSMutableAttributedString(string: full, attributes: [
-            .font: NSFont.systemFont(ofSize: 11),
-            .foregroundColor: NSColor.secondaryLabelColor,
+            .font: LazyCatTheme.body(11),
+            .foregroundColor: LazyCatTheme.tx3,
         ])
         if task.person.isEmpty {
             let range = (full as NSString).range(of: personStr)
@@ -276,7 +275,7 @@ final class TaskRowView: NSTableCellView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.04).cgColor
+        layer?.backgroundColor = LazyCatTheme.bgSurface.cgColor
     }
     override func mouseExited(with event: NSEvent) {
         layer?.backgroundColor = NSColor.clear.cgColor

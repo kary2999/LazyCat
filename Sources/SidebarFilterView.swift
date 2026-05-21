@@ -37,12 +37,24 @@ final class SidebarFilterView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func build() {
-        // vibrancy 背景
+        // 固定暖橙底色（不随系统 dark mode 飘色）
         vibrancy.material = .sidebar
         vibrancy.blendingMode = .behindWindow
         vibrancy.state = .followsWindowActiveState
         vibrancy.translatesAutoresizingMaskIntoConstraints = false
+        // 用实色遮住 vibrancy，保持治愈系配色
+        let solidBg = NSView()
+        solidBg.wantsLayer = true
+        solidBg.layer?.backgroundColor = LazyCatTheme.bgSoft.cgColor
+        solidBg.translatesAutoresizingMaskIntoConstraints = false
         addSubview(vibrancy)
+        addSubview(solidBg)
+        NSLayoutConstraint.activate([
+            solidBg.topAnchor.constraint(equalTo: topAnchor),
+            solidBg.leadingAnchor.constraint(equalTo: leadingAnchor),
+            solidBg.trailingAnchor.constraint(equalTo: trailingAnchor),
+            solidBg.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
 
         // 搜索框
         searchField.placeholderString = "搜索 任务 / @人"
@@ -385,7 +397,7 @@ private final class NavRow: NSView {
     }
     override func mouseEntered(with event: NSEvent) {
         if !isSelected {
-            layer?.backgroundColor = NSColor.black.withAlphaComponent(0.04).cgColor
+            layer?.backgroundColor = LazyCatTheme.accent.withAlphaComponent(0.07).cgColor
         }
     }
     override func mouseExited(with event: NSEvent) {
@@ -397,13 +409,36 @@ private final class NavRow: NSView {
         onClick?()
     }
 
+    // 左侧橙色指示条
+    private lazy var indicator: NSView = {
+        let v = NSView()
+        v.wantsLayer = true
+        v.layer?.backgroundColor = LazyCatTheme.accent.cgColor
+        v.layer?.cornerRadius = 1.5
+        v.translatesAutoresizingMaskIntoConstraints = false
+        return v
+    }()
+
     private func restyle() {
         if isSelected {
-            layer?.backgroundColor = NSColor.black.withAlphaComponent(0.07).cgColor
-            titleLabel.font = LazyCatTheme.body(12.5, weight: .medium)
+            layer?.backgroundColor = LazyCatTheme.accent.withAlphaComponent(0.12).cgColor
+            titleLabel.textColor = LazyCatTheme.accent
+            titleLabel.font = LazyCatTheme.body(12.5, weight: .semibold)
+            if indicator.superview == nil {
+                addSubview(indicator)
+                NSLayoutConstraint.activate([
+                    indicator.leadingAnchor.constraint(equalTo: leadingAnchor),
+                    indicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+                    indicator.widthAnchor.constraint(equalToConstant: 3),
+                    indicator.heightAnchor.constraint(equalToConstant: 16),
+                ])
+            }
+            indicator.isHidden = false
         } else {
             layer?.backgroundColor = NSColor.clear.cgColor
+            titleLabel.textColor = LazyCatTheme.tx1
             titleLabel.font = LazyCatTheme.body(12.5, weight: .medium)
+            indicator.isHidden = true
         }
     }
 }

@@ -459,7 +459,7 @@ final class TelegramTDLib {
         let senderName = nameForSender(senderId)
         let date = Date(timeIntervalSince1970: Double((msg["date"] as? Int) ?? Int(Date().timeIntervalSince1970)))
 
-        let item = InboxMessage(
+        var item = InboxMessage(
             id: dedupeKey,
             chatId: chatId,
             messageId: messageId,
@@ -474,6 +474,7 @@ final class TelegramTDLib {
             imageLocalPath: imgLocalPath,
             imageFileId: imgFileId
         )
+        item.isMention = chatType != "private" && isMentioned(text: text, msg: msg)
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -564,6 +565,24 @@ final class TelegramTDLib {
         }
     }
 
+    /// 批量标记指定 id 为已读，一次通知
+    func markRead(ids: Set<String>) {
+        DispatchQueue.main.async {
+            for i in 0..<self.inbox.count where ids.contains(self.inbox[i].id) {
+                self.inbox[i].read = true
+            }
+            NotificationCenter.default.post(name: Self.inboxDidChange, object: nil)
+        }
+    }
+
+    /// 批量删除，一次通知（避免逐条 dismiss 触发 N 次 refresh）
+    func dismissBatch(ids: Set<String>) {
+        DispatchQueue.main.async {
+            self.inbox.removeAll { ids.contains($0.id) }
+            NotificationCenter.default.post(name: Self.inboxDidChange, object: nil)
+        }
+    }
+
     func clearAll() {
         DispatchQueue.main.async {
             self.inbox.removeAll()
@@ -592,6 +611,8 @@ struct InboxMessage: Equatable {
     var imageFileId: Int? = nil
 
     var isPrivate: Bool { chatType == "private" }
+    /// 群消息中包含对我的 @ 或 reply
+    var isMention: Bool = false
 }
 
 struct ChatInfo {
