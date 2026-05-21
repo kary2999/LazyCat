@@ -13,7 +13,9 @@ fileprivate struct InboxRenderEntry {
 /// 让 title 在没数字时单独居中。
 fileprivate final class TGTabItem: NSView {
     private let titleLbl = NSTextField(labelWithString: "")
-    private let badge = NSTextField(labelWithString: "")
+    // badge: NSView(layer bg) + NSTextField(no wantsLayer) → 文字走 AppKit 直接渲染，清晰
+    private let badgeWrap = NSView()
+    private let badgeLbl  = NSTextField(labelWithString: "")
     private let inner = NSStackView()
     private let underline = CALayer()
     var onClick: (() -> Void)?
@@ -27,15 +29,25 @@ fileprivate final class TGTabItem: NSView {
         titleLbl.drawsBackground = false
         titleLbl.isBezeled = false
 
-        badge.alignment = .center
-        badge.drawsBackground = false
-        badge.isBezeled = false
-        badge.wantsLayer = true
-        badge.layer?.cornerRadius = 7
-        badge.layer?.masksToBounds = true
+        // badge wrapper — layer 负责圆角背景
+        badgeWrap.wantsLayer = true
+        badgeWrap.layer?.cornerRadius = 7
+        badgeWrap.layer?.masksToBounds = true
+        badgeWrap.translatesAutoresizingMaskIntoConstraints = false
+        // badge label — 无 wantsLayer，文字由父 layer 合成，走 AppKit 路径
+        badgeLbl.alignment = .center
+        badgeLbl.drawsBackground = false
+        badgeLbl.isBezeled = false
+        badgeLbl.isSelectable = false
+        badgeLbl.translatesAutoresizingMaskIntoConstraints = false
+        badgeWrap.addSubview(badgeLbl)
         NSLayoutConstraint.activate([
-            badge.heightAnchor.constraint(equalToConstant: 14),
-            badge.widthAnchor.constraint(greaterThanOrEqualToConstant: 18),
+            badgeLbl.leadingAnchor.constraint(equalTo: badgeWrap.leadingAnchor, constant: 4),
+            badgeLbl.trailingAnchor.constraint(equalTo: badgeWrap.trailingAnchor, constant: -4),
+            badgeLbl.topAnchor.constraint(equalTo: badgeWrap.topAnchor, constant: 1),
+            badgeLbl.bottomAnchor.constraint(equalTo: badgeWrap.bottomAnchor, constant: -1),
+            badgeWrap.heightAnchor.constraint(equalToConstant: 14),
+            badgeWrap.widthAnchor.constraint(greaterThanOrEqualToConstant: 18),
         ])
 
         inner.orientation = .horizontal
@@ -43,7 +55,7 @@ fileprivate final class TGTabItem: NSView {
         inner.spacing = 5
         inner.translatesAutoresizingMaskIntoConstraints = false
         inner.addArrangedSubview(titleLbl)
-        inner.addArrangedSubview(badge)
+        inner.addArrangedSubview(badgeWrap)
         addSubview(inner)
         NSLayoutConstraint.activate([
             inner.centerXAnchor.constraint(equalTo: centerXAnchor),
@@ -69,14 +81,14 @@ fileprivate final class TGTabItem: NSView {
             .font: LazyCatTheme.body(12, weight: isActive ? .bold : .semibold),
         ])
         if count > 0 {
-            badge.isHidden = false
-            badge.attributedStringValue = NSAttributedString(string: " \(count) ", attributes: [
+            badgeWrap.isHidden = false
+            badgeLbl.attributedStringValue = NSAttributedString(string: "\(count)", attributes: [
                 .foregroundColor: NSColor.white,
                 .font: LazyCatTheme.body(9.5, weight: .bold),
             ])
-            badge.layer?.backgroundColor = (isActive ? accentColor : LazyCatTheme.tx4).cgColor
+            badgeWrap.layer?.backgroundColor = (isActive ? accentColor : LazyCatTheme.tx4).cgColor
         } else {
-            badge.isHidden = true
+            badgeWrap.isHidden = true
         }
         underline.backgroundColor = isActive ? accentColor.cgColor : NSColor.clear.cgColor
     }
@@ -134,6 +146,7 @@ fileprivate final class GradientAvatar: NSView {
 final class TGInboxView: NSView {
 
     var onConvertToTask: ((InboxMessage) -> Void)?
+    var onBatchConvert: (([InboxMessage]) -> Void)?
     var onOpenSettings: (() -> Void)?
 
     enum Tab: Int { case all = 0, dm = 1, group = 2, alert = 3 }
@@ -149,8 +162,8 @@ final class TGInboxView: NSView {
     private let header = NSView()
     private let titleIcon = NSTextField(labelWithString: "✈")
     private let titleLbl = NSTextField(labelWithString: "TG 提示")
-    private let countPill = NSTextField(labelWithString: "0")
-    private let selectBtn = NSButton(title: "批量处理", target: nil, action: nil)
+    private var countPill: SharpPill!
+    private var selectBtn: SharpButton!
     private let clearAllBtn = NSButton(title: "全部已读", target: nil, action: nil)
 
     private let tabBar = NSStackView()
@@ -164,17 +177,19 @@ final class TGInboxView: NSView {
     private let emptyLbl = NSTextField(labelWithString: "暂无新消息\n配置好 TG 后\n这里会出现 @ 你和私聊的消息")
 
     private let batchBar = NSView()
-    private let batchCount = NSTextField(labelWithString: "0")
+    private var batchCount: SharpPill!
     private let batchLabel = NSTextField(labelWithString: "已选")
-    private let batchSelectAll = NSButton(title: "全选", target: nil, action: nil)
-    private var batchActionButtons: [NSButton] = []
+    // 批量栏按钮 — 回归 NSButton，避免自定义视图事件路由问题
+    private let batchSelectAll  = NSButton(title: "全选",  target: nil, action: nil)
+    private let batchReadBtn    = NSButton(title: "已读",  target: nil, action: nil)
+    private let batchConvertBtn = NSButton(title: "转任务", target: nil, action: nil)
+    private let batchDeleteBtn  = NSButton(title: "删除",  target: nil, action: nil)
+    private let batchDoneBtn    = NSButton(title: "✓ 完成", target: nil, action: nil)
     /// batchBar 动态高度:正常 40,!batchMode 时收为 0(不再占空白)
     private var batchBarHeight: NSLayoutConstraint!
 
     private let pager = NSView()
     private let pagerInfoLbl = NSTextField(labelWithString: "")
-
-    private let escBtn = NSButton(title: "esc", target: nil, action: nil)
 
     private let footer = NSView()
     private let footerStatus = NSTextField(labelWithString: "未连接")
@@ -213,7 +228,6 @@ final class TGInboxView: NSView {
     private func build() {
         let tg = NSColor(red: 0.13, green: 0.62, blue: 0.85, alpha: 1)
 
-        // header
         header.translatesAutoresizingMaskIntoConstraints = false
         addSubview(header)
 
@@ -232,24 +246,19 @@ final class TGInboxView: NSView {
         titleLbl.translatesAutoresizingMaskIntoConstraints = false
         header.addSubview(titleLbl)
 
-        countPill.alignment = .center
-        countPill.wantsLayer = true
-        countPill.layer?.backgroundColor = tg.cgColor
-        countPill.layer?.cornerRadius = 9
-        countPill.drawsBackground = false
-        countPill.isBezeled = false
-        countPill.translatesAutoresizingMaskIntoConstraints = false
+        // countPill — SharpPill 保证文字走 AppKit 渲染
+        countPill = SharpPill(text: " 0 ", bg: tg, fg: .white,
+                              fontSize: 10.5, fontWeight: .bold, cornerRadius: 9, hPad: 0, vPad: 0)
         header.addSubview(countPill)
 
-        // 选择按钮(.select-mode 药丸:普通态浅灰底,激活态 TG 蓝底白字)
-        selectBtn.bezelStyle = .regularSquare
-        selectBtn.isBordered = false
-        selectBtn.focusRingType = .none
-        selectBtn.target = self
-        selectBtn.action = #selector(actToggleBatch)
-        selectBtn.wantsLayer = true
-        selectBtn.layer?.cornerRadius = 5
-        selectBtn.translatesAutoresizingMaskIntoConstraints = false
+        // 批量处理切换按钮 — SharpButton（draw 路径，文字锐利）
+        selectBtn = SharpButton(title: "  批量处理  ",
+                                bg: NSColor.white.withAlphaComponent(0.70),
+                                fg: LazyCatTheme.tx2,
+                                fontSize: 11, weight: .semibold, cornerRadius: 5,
+                                borderColor: NSColor.black.withAlphaComponent(0.14),
+                                borderWidth: 1)
+        selectBtn.onClick = { [weak self] in self?.actToggleBatch() }
         header.addSubview(selectBtn)
 
         // 全部已读
@@ -326,13 +335,9 @@ final class TGInboxView: NSView {
             batchDiv.heightAnchor.constraint(equalToConstant: 0.5),
         ])
 
-        batchCount.alignment = .center
-        batchCount.wantsLayer = true
-        batchCount.layer?.backgroundColor = LazyCatTheme.accent.cgColor
-        batchCount.layer?.cornerRadius = 9
-        batchCount.drawsBackground = false
-        batchCount.isBezeled = false
-        batchCount.translatesAutoresizingMaskIntoConstraints = false
+        // batchCount pill
+        batchCount = SharpPill(text: " 0 ", bg: LazyCatTheme.accent, fg: .white,
+                               fontSize: 10.5, fontWeight: .bold, cornerRadius: 9, hPad: 0, vPad: 0)
         batchBar.addSubview(batchCount)
 
         batchLabel.font = LazyCatTheme.body(10.5, weight: .medium)
@@ -341,49 +346,33 @@ final class TGInboxView: NSView {
         batchLabel.translatesAutoresizingMaskIntoConstraints = false
         batchBar.addSubview(batchLabel)
 
-        styleSmallTextBtn(batchSelectAll, title: "全选",
-                          color: LazyCatTheme.accent,
-                          action: #selector(actBatchSelectAll))
-        batchBar.addSubview(batchSelectAll)
-
-        // 已读 / 转任务 / 删除 — 字号缩小到 10.5，固定宽防止截断
-        let actions: [(String, NSColor, Selector, CGFloat)] = [
-            ("已读",  LazyCatTheme.tx2,    #selector(actBatchMarkRead),  40),
-            ("转任务", LazyCatTheme.accent, #selector(actBatchConvert),   52),
-            ("删除",   LazyCatTheme.red,   #selector(actBatchDelete),    40),
-        ]
-        for (t, c, sel, w) in actions {
-            let b = NSButton(title: t, target: self, action: sel)
-            styleBatchActionBtn(b, title: t, color: c, width: w)
-            batchBar.addSubview(b)
-            batchActionButtons.append(b)
+        // 批量栏按钮 — NSButton，事件路由零问题
+        func styleBB(_ b: NSButton, fg: NSColor, bg: NSColor, width: CGFloat, sel: Selector) {
+            b.bezelStyle = .regularSquare
+            b.isBordered = false
+            b.focusRingType = .none
+            b.wantsLayer = true
+            b.layer?.cornerRadius = 4
+            b.layer?.backgroundColor = bg.cgColor
+            b.layer?.borderWidth = 0.5
+            b.layer?.borderColor = fg.withAlphaComponent(0.3).cgColor
+            b.attributedTitle = NSAttributedString(string: b.title, attributes: [
+                .foregroundColor: fg,
+                .font: LazyCatTheme.body(10.5, weight: .semibold),
+            ])
+            b.target = self
+            b.action = sel
+            b.translatesAutoresizingMaskIntoConstraints = false
+            b.widthAnchor.constraint(equalToConstant: width).isActive = true
         }
-
-        // 完成按钮左侧 divider
-        let escDivider = NSView()
-        escDivider.wantsLayer = true
-        escDivider.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.1).cgColor
-        escDivider.translatesAutoresizingMaskIntoConstraints = false
-        batchBar.addSubview(escDivider)
-
-        // ✓ 完成按钮(批量栏最右)— TG 蓝底白字药丸,明确表示退出批量模式
-        // 之前用 "esc" 文案太隐晦,用户找不到完成入口
-        escBtn.bezelStyle = .regularSquare
-        escBtn.isBordered = false
-        escBtn.focusRingType = .none
-        escBtn.target = self
-        escBtn.action = #selector(actExitBatch)
-        escBtn.toolTip = "完成批量处理(也可按 esc 退出)"
-        escBtn.wantsLayer = true
-        escBtn.layer?.cornerRadius = 5
-        escBtn.layer?.borderWidth = 0
-        escBtn.layer?.backgroundColor = tg.cgColor
-        escBtn.attributedTitle = NSAttributedString(string: " ✓ 完成 ", attributes: [
-            .foregroundColor: NSColor.white,
-            .font: LazyCatTheme.body(11, weight: .bold),
-        ])
-        escBtn.translatesAutoresizingMaskIntoConstraints = false
-        batchBar.addSubview(escBtn)
+        styleBB(batchSelectAll,  fg: LazyCatTheme.accent, bg: LazyCatTheme.accent.withAlphaComponent(0.10), width: 40, sel: #selector(actBatchSelectAll))
+        styleBB(batchConvertBtn, fg: LazyCatTheme.accent, bg: LazyCatTheme.accent.withAlphaComponent(0.10), width: 52, sel: #selector(actBatchConvert))
+        styleBB(batchDeleteBtn,  fg: LazyCatTheme.red,    bg: LazyCatTheme.red.withAlphaComponent(0.08),    width: 40, sel: #selector(actBatchDelete))
+        styleBB(batchDoneBtn,    fg: .white,              bg: tg,                                            width: 64, sel: #selector(actBatchConvert))
+        batchBar.addSubview(batchSelectAll)
+        batchBar.addSubview(batchConvertBtn)
+        batchBar.addSubview(batchDeleteBtn)
+        batchBar.addSubview(batchDoneBtn)
 
         // 翻页栏
         pager.wantsLayer = true
@@ -493,8 +482,9 @@ final class TGInboxView: NSView {
             batchLabel.leadingAnchor.constraint(equalTo: batchCount.trailingAnchor, constant: 6),
             batchLabel.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
 
-            batchSelectAll.leadingAnchor.constraint(equalTo: batchLabel.trailingAnchor, constant: 4),
+            batchSelectAll.leadingAnchor.constraint(equalTo: batchLabel.trailingAnchor, constant: 6),
             batchSelectAll.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
+            batchSelectAll.heightAnchor.constraint(equalToConstant: 22),
 
             pager.bottomAnchor.constraint(equalTo: footer.topAnchor),
             pager.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -516,32 +506,21 @@ final class TGInboxView: NSView {
             gearBtn.centerYAnchor.constraint(equalTo: footer.centerYAnchor),
         ])
 
-        // 批量按钮栏右侧布局:从右到左 [完成 | divider | 删除 转任务 已读]
-        let trailingPad: CGFloat = 8
+        // 批量栏右侧布局: trailing → [✓完成][删除][转任务][已读] ← batchSelectAll
         NSLayoutConstraint.activate([
-            escBtn.trailingAnchor.constraint(equalTo: batchBar.trailingAnchor, constant: -trailingPad),
-            escBtn.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
-            escBtn.heightAnchor.constraint(equalToConstant: 22),
-            escBtn.widthAnchor.constraint(equalToConstant: 52),
+            batchDoneBtn.trailingAnchor.constraint(equalTo: batchBar.trailingAnchor, constant: -8),
+            batchDoneBtn.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
+            batchDoneBtn.heightAnchor.constraint(equalToConstant: 24),
 
-            escDivider.trailingAnchor.constraint(equalTo: escBtn.leadingAnchor, constant: -6),
-            escDivider.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
-            escDivider.widthAnchor.constraint(equalToConstant: 0.5),
-            escDivider.heightAnchor.constraint(equalToConstant: 16),
+            batchDeleteBtn.trailingAnchor.constraint(equalTo: batchDoneBtn.leadingAnchor, constant: -4),
+            batchDeleteBtn.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
+            batchDeleteBtn.heightAnchor.constraint(equalToConstant: 22),
+
+            batchConvertBtn.trailingAnchor.constraint(equalTo: batchDeleteBtn.leadingAnchor, constant: -4), // 已读按钮已移除，转任务直接接删除
+            batchConvertBtn.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor),
+            batchConvertBtn.heightAnchor.constraint(equalToConstant: 22),
+
         ])
-        var prev: NSView = escDivider
-        for b in batchActionButtons.reversed() {
-            b.trailingAnchor.constraint(equalTo: prev.leadingAnchor, constant: -4).isActive = true
-            b.centerYAnchor.constraint(equalTo: batchBar.centerYAnchor).isActive = true
-            b.heightAnchor.constraint(equalToConstant: 22).isActive = true
-            prev = b
-        }
-        // ★ 防止左侧标签组和右侧按钮组重叠 — 全选按钮右边缘 ≤ 最左侧动作按钮左边缘
-        if let leftmost = batchActionButtons.first {
-            batchSelectAll.trailingAnchor.constraint(
-                lessThanOrEqualTo: leftmost.leadingAnchor, constant: -6
-            ).isActive = true
-        }
     }
 
     // MARK: - 私有 helpers
@@ -597,7 +576,7 @@ final class TGInboxView: NSView {
         switch currentTab {
         case .all:   return all
         case .dm:    return all.filter { $0.isPrivate }
-        case .group: return all.filter { !$0.isPrivate }
+        case .group: return all.filter { !$0.isPrivate && $0.isMention }   // 群@ = 只看被@的
         case .alert: return all.filter { isAlertMessage($0) }
         }
     }
@@ -662,7 +641,7 @@ final class TGInboxView: NSView {
         switch tab {
         case .all:   return all.count
         case .dm:    return all.filter { $0.isPrivate }.count
-        case .group: return all.filter { !$0.isPrivate }.count
+        case .group: return all.filter { !$0.isPrivate && $0.isMention }.count
         case .alert: return all.filter { isAlertMessage($0) }.count
         }
     }
@@ -681,22 +660,14 @@ final class TGInboxView: NSView {
         // header
         let unread = TelegramTDLib.shared.inbox.filter { !$0.read }.count
         countPill.isHidden = (unread == 0)
-        countPill.attributedStringValue = NSAttributedString(string: " \(unread) ", attributes: [
-            .foregroundColor: NSColor.white,
-            .font: LazyCatTheme.body(10.5, weight: .bold),
-        ])
-        // 批量处理按钮:.select-mode 药丸,普通 rgba(0,0,0,.04) 灰底,激活 TG 蓝底白字
+        countPill.updateText(" \(unread) ")
+        // 批量处理按钮:.select-mode 药丸,普通浅灰底,激活 TG 蓝底白字
         let tg = NSColor(red: 0.13, green: 0.62, blue: 0.85, alpha: 1)
-        let selectTitle = batchMode ? "  ✓ 批量中  " : "  批量处理  "
-        selectBtn.attributedTitle = NSAttributedString(
-            string: selectTitle,
-            attributes: [
-                .foregroundColor: batchMode ? NSColor.white : LazyCatTheme.tx2,
-                .font: LazyCatTheme.body(11, weight: .semibold),
-            ])
-        selectBtn.layer?.backgroundColor = (batchMode
-            ? tg
-            : NSColor.black.withAlphaComponent(0.04)).cgColor
+        selectBtn.update(
+            title: batchMode ? "  ✓ 批量中  " : "  批量处理  ",
+            fg: batchMode ? .white : LazyCatTheme.tx2,
+            bg: batchMode ? tg : NSColor.white.withAlphaComponent(0.70),
+            border: batchMode ? tg : NSColor.black.withAlphaComponent(0.14))
 
         // tab 内 [title][badge] 都由 TGTabItem.update 一起做,确保不飘
         let names = ["全部", "私聊", "群 @", "报警"]
@@ -768,12 +739,7 @@ final class TGInboxView: NSView {
         let selectedGroupCount = entries.filter { e in
             e.mergedIds.contains(where: { selectedIds.contains($0) })
         }.count
-        batchCount.attributedStringValue = NSAttributedString(
-            string: " \(selectedGroupCount) ",
-            attributes: [
-                .foregroundColor: NSColor.white,
-                .font: LazyCatTheme.body(10.5, weight: .bold),
-            ])
+        batchCount.updateText(" \(selectedGroupCount) ")
         batchLabel.stringValue = "已选 / \(total)"
 
         // 翻页栏:设计图 ‹ 1 2 [3] 4 … N › ── 当前页用 accent 实心,其余透明
@@ -893,24 +859,37 @@ final class TGInboxView: NSView {
         refresh()
     }
     @objc private func actBatchMarkRead() {
-        // 简单做法:未读全部置已读(精确 per-id markRead 没单独 API,等后续加)
-        TelegramTDLib.shared.markAllRead()
+        let ids = selectedIds
         selectedIds.removeAll()
         batchMode = false
-        refresh()
+        refresh()                                 // 立即更新 UI：退出批量模式
+        TelegramTDLib.shared.markRead(ids: ids)  // async → 再触发一次 refresh 更新已读样式
     }
     @objc private func actBatchConvert() {
-        let items = TelegramTDLib.shared.inbox.filter { selectedIds.contains($0.id) }
-        for it in items { onConvertToTask?(it) }
+        guard !selectedIds.isEmpty else {
+            // 没选任何条目：仅退出批量模式
+            actExitBatch()
+            return
+        }
+        let ids = selectedIds
+        let items = TelegramTDLib.shared.inbox
+            .filter { ids.contains($0.id) }
+            .sorted { $0.date < $1.date }
         selectedIds.removeAll()
         batchMode = false
-        refresh()
+        refresh()                                 // 立即更新 UI：退出批量模式
+        if let batch = onBatchConvert {
+            batch(items)                          // async dismissBatch → 再触发一次 refresh 清掉条目
+        } else {
+            for it in items { onConvertToTask?(it) }
+        }
     }
     @objc private func actBatchDelete() {
-        for id in selectedIds { TelegramTDLib.shared.dismiss(id) }
+        let ids = selectedIds
         selectedIds.removeAll()
         batchMode = false
-        refresh()
+        refresh()                                      // 立即更新 UI：退出批量模式
+        TelegramTDLib.shared.dismissBatch(ids: ids)   // async → 再触发一次 refresh 清掉条目
     }
     @objc private func actPrevPage() {
         if currentPage > 1 { currentPage -= 1; refresh() }
@@ -961,6 +940,201 @@ final class TGInboxView: NSView {
     }
 }
 
+// MARK: - SharpButton
+// ★ 核心锐利度原理：
+//   自身 NO wantsLayer → draw(_:) 被合并进父 layer（CardView 的 canDrawSubviewsIntoLayer）
+//   NSTextField 子视图同理，走 AppKit CoreText drawRect，不经 CATextLayer → 完全清晰
+//   在非 canDrawSubviewsIntoLayer 的父级下（batchBar/header），因父已设 canDrawSubviewsIntoLayer
+//   效果一样。
+
+private final class SharpButton: NSView {
+    var onClick: (() -> Void)?
+
+    // 可变外观属性 — 修改后自动触发重绘
+    var bgColor: NSColor    { didSet { needsDisplay = true } }
+    var borderColor: NSColor { didSet { needsDisplay = true } }
+    var borderWidth: CGFloat { didSet { needsDisplay = true } }
+    var cornerRadius: CGFloat { didSet { needsDisplay = true } }
+    private var _fgColor: NSColor
+    private let label = NSTextField(labelWithString: "")
+
+    init(title: String, bg: NSColor, fg: NSColor,
+         fontSize: CGFloat = 11.5, weight: NSFont.Weight = .bold,
+         cornerRadius: CGFloat = 6,
+         borderColor: NSColor = .clear, borderWidth: CGFloat = 0) {
+        self.bgColor = bg
+        self._fgColor = fg
+        self.borderColor = borderColor
+        self.borderWidth = borderWidth
+        self.cornerRadius = cornerRadius
+        super.init(frame: .zero)
+        // ★ 不设 wantsLayer — 让父级 canDrawSubviewsIntoLayer 把本视图合并进同一 layer
+        translatesAutoresizingMaskIntoConstraints = false
+
+        label.stringValue = title
+        label.font = LazyCatTheme.body(fontSize, weight: weight)
+        label.textColor = fg
+        label.alignment = .center
+        label.drawsBackground = false
+        label.isBezeled = false
+        label.isSelectable = false
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let bw = borderWidth
+        let inset = bw / 2
+        let rect = bounds.insetBy(dx: inset, dy: inset)
+        guard rect.width > 0, rect.height > 0 else { return }
+        let path = NSBezierPath(roundedRect: rect, xRadius: cornerRadius, yRadius: cornerRadius)
+        bgColor.setFill()
+        path.fill()
+        if bw > 0 {
+            path.lineWidth = bw
+            borderColor.setStroke()
+            path.stroke()
+        }
+    }
+
+    /// 动态更新标题 / 前景色 / 背景色 / 边框色
+    func update(title: String? = nil, fg: NSColor? = nil, bg: NSColor? = nil,
+                border: NSColor? = nil) {
+        if let t = title { label.stringValue = t }
+        if let f = fg    { label.textColor = f; _fgColor = f }
+        if let b = bg    { bgColor = b }
+        if let bc = border { borderColor = bc }
+    }
+
+    // ★ mouseDown / Up 直接响应点击（比 gesture recognizer 更可靠，不受 canDrawSubviewsIntoLayer 影响）
+    override func mouseDown(with event: NSEvent) {
+        alphaValue = 0.70
+    }
+    override func mouseUp(with event: NSEvent) {
+        alphaValue = 1.00
+        let pt = convert(event.locationInWindow, from: nil)
+        if bounds.contains(pt) { onClick?() }
+    }
+    override func mouseEntered(with event: NSEvent) { alphaValue = 0.82 }
+    override func mouseExited(with event: NSEvent)  { alphaValue = 1.00 }
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach { removeTrackingArea($0) }
+        addTrackingArea(NSTrackingArea(rect: bounds,
+            options: [.mouseEnteredAndExited, .activeInKeyWindow],
+            owner: self, userInfo: nil))
+    }
+}
+
+// MARK: - SharpPill（同 SharpButton：draw 路径，无独立 layer）
+
+private final class SharpPill: NSView {
+    private let label = NSTextField(labelWithString: "")
+    var bgColor: NSColor { didSet { needsDisplay = true } }
+    private var _cr: CGFloat
+    private var _hPad: CGFloat
+
+    init(text: String, bg: NSColor, fg: NSColor,
+         fontSize: CGFloat = 9.5, fontWeight: NSFont.Weight = .bold,
+         cornerRadius: CGFloat = 4,
+         hPad: CGFloat = 5, vPad: CGFloat = 2) {
+        self.bgColor = bg
+        self._cr = cornerRadius
+        self._hPad = hPad
+        super.init(frame: .zero)
+        translatesAutoresizingMaskIntoConstraints = false
+
+        label.stringValue = text
+        label.font = LazyCatTheme.body(fontSize, weight: fontWeight)
+        label.textColor = fg
+        label.alignment = .center
+        label.drawsBackground = false
+        label.isBezeled = false
+        label.isSelectable = false
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: hPad),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -hPad),
+            label.topAnchor.constraint(equalTo: topAnchor, constant: vPad),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -vPad),
+        ])
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let path = NSBezierPath(roundedRect: bounds, xRadius: _cr, yRadius: _cr)
+        bgColor.setFill()
+        path.fill()
+    }
+
+    func updateText(_ text: String, fg: NSColor? = nil, bg: NSColor? = nil) {
+        label.stringValue = text
+        if let f = fg { label.textColor = f }
+        if let b = bg { bgColor = b }
+    }
+}
+
+// MARK: - CardView：卡片容器，canDrawSubviewsIntoLayer = true 是清晰度核心
+// 所有子视图（SharpButton, SharpPill, NSTextField）合并进同一 CALayer，
+// 走 AppKit drawRect → CoreText → 100% 锐利，与 HTML/浏览器渲染效果一致。
+
+private final class CardView: NSView {
+    var bgColor: NSColor         { didSet { needsDisplay = true } }
+    var borderColor: NSColor     { didSet { needsDisplay = true } }
+    var borderWidth: CGFloat     { didSet { needsDisplay = true } }
+    var accentBarColor: NSColor? { didSet { needsDisplay = true } }
+    private let cr: CGFloat
+
+    init(bg: NSColor, border: NSColor, borderWidth: CGFloat,
+         accentBar: NSColor? = nil, cornerRadius: CGFloat = 10) {
+        self.bgColor = bg
+        self.borderColor = border
+        self.borderWidth = borderWidth
+        self.accentBarColor = accentBar
+        self.cr = cornerRadius
+        super.init(frame: .zero)
+        wantsLayer = true
+        canDrawSubviewsIntoLayer = true
+        translatesAutoresizingMaskIntoConstraints = false
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let bw = borderWidth
+        let inset = bw / 2
+        let rect = bounds.insetBy(dx: inset, dy: inset)
+        guard rect.width > 0, rect.height > 0 else { return }
+
+        // 圆角背景
+        let path = NSBezierPath(roundedRect: rect, xRadius: cr, yRadius: cr)
+        bgColor.setFill()
+        path.fill()
+
+        // 边框
+        if bw > 0 {
+            path.lineWidth = bw
+            borderColor.setStroke()
+            path.stroke()
+        }
+
+        // 左色条（未读/报警标记）
+        if let accent = accentBarColor {
+            let barRect = NSRect(x: inset, y: 4, width: 3, height: bounds.height - 8)
+            let barPath = NSBezierPath(roundedRect: barRect, xRadius: 1.5, yRadius: 1.5)
+            accent.setFill()
+            barPath.fill()
+        }
+    }
+}
+
 // MARK: - 单条 row (v2: 时间独占一行 / 选择 checkbox / 暖橘按钮)
 
 private final class TGInboxRow: NSView {
@@ -987,19 +1161,19 @@ private final class TGInboxRow: NSView {
         self.mergedCount = mergedCount
         self.appendMode = appendMode
         super.init(frame: .zero)
-        wantsLayer = true
+        // TGInboxRow 自身不需要 layer（CardView 内部处理背景）
         translatesAutoresizingMaskIntoConstraints = false
         build()
     }
     required init?(coder: NSCoder) { fatalError() }
 
     static func estimatedHeight(for item: InboxMessage) -> CGFloat {
-        // 强制按"3 行文本上限"算固定高度,跟 build() 里的 textHeight 必须保持一致
+        // 实测布局：row margins(4) + av.top(11) + av(26) + gap(6) + text(51)
+        //           + gap(6) + when(18) + gap(8) + btn(28) + btn.bottom(10) = 168
         let isGroup = !item.isPrivate && !item.sourceLabel.isEmpty
-        let groupRow: CGFloat = isGroup ? 18 : 0
-        let imageH: CGFloat = (item.imageLocalPath != nil) ? 86 : 0
-        // header(头像 30) + group row + text(3行*17=51) + when(18) + actions(30) + paddings(20)
-        return 30 + groupRow + 51 + imageH + 18 + 30 + 18
+        let groupRow: CGFloat = isGroup ? 20 : 0
+        let imageH: CGFloat = (item.imageLocalPath != nil) ? 82 : 0
+        return 168 + groupRow + imageH
     }
 
     /// 把多行 / 长文本压成单字符串(\n → 空格,限 200 字),
@@ -1019,37 +1193,31 @@ private final class TGInboxRow: NSView {
     private func build() {
         let tg = NSColor(red: 0.13, green: 0.62, blue: 0.85, alpha: 1)
         let red = LazyCatTheme.red
-        let card = NSView()
-        card.wantsLayer = true
-        card.layer?.backgroundColor = selected
-            ? NSColor(red: 0.92, green: 0.96, blue: 0.99, alpha: 1).cgColor
-            : NSColor.white.cgColor
-        card.layer?.cornerRadius = 10
-        card.layer?.borderWidth = selected ? 1 : 0.5
-        card.layer?.borderColor = selected
-            ? tg.cgColor
-            : NSColor.black.withAlphaComponent(0.06).cgColor
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
 
-        // 未读 / 报警左色条
-        let leftBarColor: NSColor? = isAlert ? red : (item.read ? nil : tg)
-        if let cc = leftBarColor {
-            let mark = NSView()
-            mark.wantsLayer = true
-            mark.layer?.backgroundColor = cc.cgColor
-            mark.layer?.cornerRadius = 1.5
-            mark.translatesAutoresizingMaskIntoConstraints = false
-            card.addSubview(mark)
-            NSLayoutConstraint.activate([
-                mark.leadingAnchor.constraint(equalTo: card.leadingAnchor),
-                mark.topAnchor.constraint(equalTo: card.topAnchor, constant: 4),
-                mark.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -4),
-                mark.widthAnchor.constraint(equalToConstant: 3),
-            ])
+        // 左色条颜色：报警红 > 私聊蓝 > 群@橙 > 已读灰(nil)
+        let privateBlue = NSColor(red: 0.18, green: 0.48, blue: 0.94, alpha: 1)
+        let leftBarColor: NSColor?
+        if isAlert {
+            leftBarColor = red
+        } else if item.read {
+            leftBarColor = nil
+        } else if item.isPrivate {
+            leftBarColor = privateBlue
+        } else if item.isMention {
+            leftBarColor = LazyCatTheme.accent
+        } else {
+            leftBarColor = tg
         }
-
         let leftPad: CGFloat = leftBarColor == nil ? 12 : 14
+
+        // ★ CardView: wantsLayer + canDrawSubviewsIntoLayer → 所有子视图合并渲染 → 清晰
+        let card = CardView(
+            bg: selected ? NSColor(red: 0.92, green: 0.96, blue: 0.99, alpha: 1) : .white,
+            border: selected ? tg : NSColor.black.withAlphaComponent(0.08),
+            borderWidth: selected ? 1 : 0.5,
+            accentBar: leftBarColor
+        )
+        addSubview(card)
 
         // checkbox(批量模式)
         var checkBox: NSButton? = nil
@@ -1080,54 +1248,36 @@ private final class TGInboxRow: NSView {
 
         // sender name
         let who = NSTextField(labelWithString: item.senderName)
-        who.font = LazyCatTheme.body(13, weight: .bold)
+        who.font = LazyCatTheme.body(12.5, weight: .bold)
         who.textColor = LazyCatTheme.tx1
         who.lineBreakMode = .byTruncatingTail
         who.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(who)
 
-        // pill (报警 / 私聊 / 群@)
-        let pill = NSTextField(labelWithString: "")
+        // pill (报警 / 私聊 / 群@) — 用 SharpPill 保证文字走 AppKit 直接渲染路径
         let pillColor: NSColor
         let pillFg: NSColor
         let pillTxt: String
         if isAlert {
             pillColor = NSColor(red: 1.00, green: 0.88, blue: 0.86, alpha: 1)
             pillFg = red
-            pillTxt = item.isPrivate ? " 报警 · 私聊 " : " 报警 · 群 @ "
+            pillTxt = item.isPrivate ? "报警 · 私聊" : "报警 · 群 @"
         } else if item.isPrivate {
-            pillColor = tg; pillFg = .white; pillTxt = " 私聊 "
+            pillColor = tg; pillFg = .white
+            pillTxt = mergedCount > 1 ? "私聊 ×\(mergedCount)" : "私聊"
         } else {
             pillColor = NSColor(red: 0.84, green: 0.92, blue: 0.97, alpha: 1)
             pillFg = NSColor(red: 0.10, green: 0.49, blue: 0.69, alpha: 1)
-            pillTxt = " 群 @ "
+            pillTxt = "群 @"
         }
-        pill.attributedStringValue = NSAttributedString(string: pillTxt, attributes: [
-            .foregroundColor: pillFg,
-            .font: LazyCatTheme.body(10, weight: .bold),
-        ])
-        pill.alignment = .center
-        pill.wantsLayer = true
-        pill.layer?.backgroundColor = pillColor.cgColor
-        pill.layer?.cornerRadius = 4
-        pill.drawsBackground = false
-        pill.isBezeled = false
-        pill.translatesAutoresizingMaskIntoConstraints = false
+        let pill = SharpPill(text: pillTxt, bg: pillColor, fg: pillFg)
         card.addSubview(pill)
 
-        // ✕
-        let xBtn = NSButton(title: "×", target: self, action: #selector(actDismiss))
-        xBtn.bezelStyle = .regularSquare
-        xBtn.isBordered = false
-        xBtn.focusRingType = .none
-        xBtn.wantsLayer = true
-        xBtn.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.04).cgColor
-        xBtn.layer?.cornerRadius = 11
-        xBtn.attributedTitle = NSAttributedString(string: "×", attributes: [
-            .foregroundColor: LazyCatTheme.tx3,
-            .font: LazyCatTheme.body(13, weight: .bold),
-        ])
-        xBtn.translatesAutoresizingMaskIntoConstraints = false
+        // ✕ — SharpButton，文字同样走 NSTextField 路径
+        let xBtn = SharpButton(title: "×", bg: NSColor.black.withAlphaComponent(0.04),
+                               fg: LazyCatTheme.tx3, fontSize: 13, weight: .bold,
+                               cornerRadius: 11)
+        xBtn.onClick = { [weak self] in self?.actDismiss() }
         card.addSubview(xBtn)
 
         // 群名一行(仅群@)
@@ -1144,7 +1294,7 @@ private final class TGInboxRow: NSView {
 
         // 文本(已压成单行 / \n→空格,wrappingLabel 自然 3 行折行)
         let text = NSTextField(wrappingLabelWithString: Self.compactText(item.text))
-        text.font = LazyCatTheme.body(13, weight: .regular)
+        text.font = LazyCatTheme.body(12.5, weight: .regular)
         text.textColor = LazyCatTheme.tx1
         text.maximumNumberOfLines = 3
         text.lineBreakMode = .byTruncatingTail
@@ -1176,81 +1326,38 @@ private final class TGInboxRow: NSView {
         when.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(when)
 
-        // 转任务 / 追加到已有任务 / 已处理 — 设计图 .btn:padding 6×12, 圆角 6, 字 11.5/700
-        // NSButton 没 contentInset,改用固定 width 控制 padding,默认 title 居中对齐
+        // ★ 转任务 / 追加 / 已处理 — SharpButton：layer 背景 + NSTextField 文字，字体清晰
         let convertTitle: String
         let convertBg: NSColor
         let convertFg: NSColor
         let convertWidth: CGFloat
         if appendMode {
-            // .btn.append: bg #eaf4fb(tg-vsoft), fg #1A7CB0(tg-dark)
             convertTitle = "＋ 追加到已有任务"
             convertBg = NSColor(red: 0.92, green: 0.96, blue: 0.98, alpha: 1)
             convertFg = NSColor(red: 0.10, green: 0.49, blue: 0.69, alpha: 1)
             convertWidth = 134
         } else {
-            // .btn.primary: bg #FF8C42(accent), fg white
             convertTitle = "＋ 转任务"
             convertBg = LazyCatTheme.accent
             convertFg = .white
             convertWidth = 84
         }
-        let convertBtn = NSButton(title: convertTitle, target: self, action: #selector(actConvert))
-        convertBtn.bezelStyle = .regularSquare
-        convertBtn.isBordered = false
-        convertBtn.focusRingType = .none
-        convertBtn.alignment = .center
-        convertBtn.wantsLayer = true
-        convertBtn.layer?.backgroundColor = convertBg.cgColor
-        convertBtn.layer?.cornerRadius = 6
-        let convertPara = NSMutableParagraphStyle()
-        convertPara.alignment = .center
-        convertBtn.attributedTitle = NSAttributedString(string: convertTitle, attributes: [
-            .foregroundColor: convertFg,
-            .font: LazyCatTheme.body(11.5, weight: .bold),
-            .paragraphStyle: convertPara,
-        ])
-        convertBtn.translatesAutoresizingMaskIntoConstraints = false
+        let convertBtn = SharpButton(title: convertTitle, bg: convertBg, fg: convertFg,
+                                     fontSize: 11.5, weight: .bold)
+        convertBtn.onClick = { [weak self] in self?.actConvert() }
         card.addSubview(convertBtn)
 
-        // .btn.ghost: bg rgba(0,0,0,.04), fg tx-2
-        let doneTitle = "已处理"
-        let doneBtn = NSButton(title: doneTitle, target: self, action: #selector(actDismiss))
-        doneBtn.bezelStyle = .regularSquare
-        doneBtn.isBordered = false
-        doneBtn.focusRingType = .none
-        doneBtn.alignment = .center
-        doneBtn.wantsLayer = true
-        doneBtn.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.04).cgColor
-        doneBtn.layer?.cornerRadius = 6
-        let donePara = NSMutableParagraphStyle()
-        donePara.alignment = .center
-        doneBtn.attributedTitle = NSAttributedString(string: doneTitle, attributes: [
-            .foregroundColor: LazyCatTheme.tx2,
-            .font: LazyCatTheme.body(11.5, weight: .bold),
-            .paragraphStyle: donePara,
-        ])
-        doneBtn.translatesAutoresizingMaskIntoConstraints = false
+        let doneBtn = SharpButton(title: "已处理",
+                                  bg: NSColor.black.withAlphaComponent(0.05),
+                                  fg: LazyCatTheme.tx2,
+                                  fontSize: 11.5, weight: .bold)
+        doneBtn.onClick = { [weak self] in self?.actDismiss() }
         card.addSubview(doneBtn)
 
-        // ★ +N 条 角标(仅合并组,position 同设计图 top:9 right:35,在 ✕ 左侧)
-        var multiIndicator: NSTextField? = nil
+        // ★ +N 条 角标 — SharpPill
+        var multiIndicator: SharpPill? = nil
         if mergedCount >= 2 {
-            let mi = NSTextField(labelWithString: "")
-            mi.alignment = .center
-            mi.wantsLayer = true
-            mi.layer?.backgroundColor = tg.cgColor
-            mi.layer?.cornerRadius = 8
-            mi.layer?.masksToBounds = true
-            mi.drawsBackground = false
-            mi.isBezeled = false
-            mi.attributedStringValue = NSAttributedString(
-                string: " +\(mergedCount) 条 ",
-                attributes: [
-                    .foregroundColor: NSColor.white,
-                    .font: LazyCatTheme.body(9.5, weight: .bold),
-                ])
-            mi.translatesAutoresizingMaskIntoConstraints = false
+            let mi = SharpPill(text: "+\(mergedCount) 条", bg: tg, fg: .white, cornerRadius: 8)
             card.addSubview(mi)
             multiIndicator = mi
         }

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag (e.g. v1.11.5)'
+        description: 'Version tag (e.g. v1.12.0)'
         required: false
 
 jobs:
@@ -34,6 +34,19 @@ jobs:
         env:
           ARCHS: arm64
 
+      - name: Generate version.json
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DMG_URL="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/LazyCat-${VERSION}.dmg"
+          cat > dist/version.json <<EOF
+          {
+            "version": "${VERSION}",
+            "download_url": "${DMG_URL}",
+            "release_notes": "LazyCat v${VERSION} — 详情见 Release 页面"
+          }
+          EOF
+          cat dist/version.json
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -43,6 +56,7 @@ jobs:
             dist/*.zip
             dist/*.tar.gz
             dist/*.sha256.txt
+            dist/version.json
           retention-days: 30
 
       - name: Create GitHub Release
@@ -73,5 +87,6 @@ jobs:
             dist/*.zip
             dist/*.tar.gz
             dist/*.sha256.txt
+            dist/version.json
           draft: false
           prerelease: false

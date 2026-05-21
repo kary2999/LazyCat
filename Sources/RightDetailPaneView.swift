@@ -34,7 +34,7 @@ final class RightDetailPaneView: NSView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         wantsLayer = true
-        layer?.backgroundColor = NSColor.white.cgColor
+        layer?.backgroundColor = LazyCatTheme.bgPage.cgColor
         translatesAutoresizingMaskIntoConstraints = false
         build()
         showEmpty()

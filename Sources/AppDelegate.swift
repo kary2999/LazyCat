@@ -66,6 +66,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             FloatingWidgetController.shared.showCollapsed()
         }
 
+        // 自动检查更新：启动后 5s 首检，之后每 60s 轮询一次
+        UpdateChecker.shared.startPolling()
+
         AppLog.log("App.window shown")
     }
 

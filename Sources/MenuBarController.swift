@@ -377,6 +377,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
             icon: "ℹ️", title: "关于 LazyCat（版本 / 构建）",
             kind: .action(#selector(showAbout))))
         items.append(LazyCatPopoverItem(
+            icon: "🔄", title: "检查更新…",
+            kind: .action(#selector(checkUpdate))))
+        items.append(LazyCatPopoverItem(
             icon: "📁", title: "在 Finder 中显示数据",
             kind: .action(#selector(revealData))))
         items.append(LazyCatPopoverItem(
@@ -724,6 +727,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
     @objc private func showAbout() {
         AboutWindowController.shared.present()
+    }
+
+    @objc private func checkUpdate() {
+        UpdateChecker.shared.checkManually()
     }
 
     @objc private func revealData() {
