@@ -38,7 +38,7 @@ final class ContentViewController: NSViewController {
     override func loadView() {
         outer.wantsLayer = true
         outer.appearance = NSAppearance(named: .aqua)
-        outer.layer?.backgroundColor = NSColor(red: 0.96, green: 0.95, blue: 0.93, alpha: 1).cgColor
+        outer.layer?.backgroundColor = LazyCatTheme.bgPage.cgColor
         view = outer
     }
 
@@ -71,7 +71,7 @@ final class ContentViewController: NSViewController {
 
         // mid pane
         midPane.wantsLayer = true
-        midPane.layer?.backgroundColor = NSColor(red: 0.972, green: 0.965, blue: 0.945, alpha: 1).cgColor
+        midPane.layer?.backgroundColor = LazyCatTheme.bgPage.cgColor
         midPane.translatesAutoresizingMaskIntoConstraints = false
 
         midHeader.translatesAutoresizingMaskIntoConstraints = false
@@ -105,7 +105,7 @@ final class ContentViewController: NSViewController {
 
         let midDivider = NSView()
         midDivider.wantsLayer = true
-        midDivider.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.06).cgColor
+        midDivider.layer?.backgroundColor = LazyCatTheme.border1.cgColor
         midDivider.translatesAutoresizingMaskIntoConstraints = false
         midPane.addSubview(midDivider)
 
@@ -608,6 +608,7 @@ final class MidListRow: NSView {
     private let priBar = NSView()
     private let titleLabel = NSTextField(labelWithString: "")
     private let metaLabel = NSTextField(labelWithString: "")
+    private let selIndicator = NSView()   // 선택 시 왼쪽 오렌지 세로선
 
     init(task: TodoItem) {
         self.task = task
@@ -624,6 +625,20 @@ final class MidListRow: NSView {
         bg.layer?.cornerRadius = 6
         bg.translatesAutoresizingMaskIntoConstraints = false
         addSubview(bg)
+
+        // 선택 인디케이터 (왼쪽 오렌지 세로선)
+        selIndicator.wantsLayer = true
+        selIndicator.layer?.backgroundColor = LazyCatTheme.accent.cgColor
+        selIndicator.layer?.cornerRadius = 1.5
+        selIndicator.isHidden = true
+        selIndicator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(selIndicator)
+        NSLayoutConstraint.activate([
+            selIndicator.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
+            selIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            selIndicator.widthAnchor.constraint(equalToConstant: 3),
+            selIndicator.heightAnchor.constraint(equalToConstant: 28),
+        ])
 
         check.isOn = task.completed
         check.translatesAutoresizingMaskIntoConstraints = false
@@ -701,13 +716,20 @@ final class MidListRow: NSView {
 
     private func restyle() {
         if isSelected {
-            bg.layer?.backgroundColor = LazyCatTheme.accent.cgColor
-            titleLabel.textColor = .white
-            metaLabel.textColor = NSColor.white.withAlphaComponent(0.85)
+            bg.layer?.backgroundColor = LazyCatTheme.bgCard.cgColor
+            bg.layer?.borderWidth = 1
+            bg.layer?.borderColor = LazyCatTheme.border1.cgColor
+            priBar.layer?.opacity = 1
+            titleLabel.textColor = LazyCatTheme.tx1
+            metaLabel.textColor = LazyCatTheme.tx2
+            selIndicator.isHidden = false
         } else {
             bg.layer?.backgroundColor = NSColor.clear.cgColor
+            bg.layer?.borderWidth = 0
+            priBar.layer?.opacity = 0.5
             titleLabel.textColor = task.completed ? LazyCatTheme.tx3 : LazyCatTheme.tx1
             metaLabel.textColor = LazyCatTheme.tx3
+            selIndicator.isHidden = true
         }
     }
 
@@ -723,7 +745,7 @@ final class MidListRow: NSView {
     }
     override func mouseEntered(with event: NSEvent) {
         if !isSelected {
-            bg.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.04).cgColor
+            bg.layer?.backgroundColor = LazyCatTheme.bgSurface.cgColor
         }
     }
     override func mouseExited(with event: NSEvent) {
