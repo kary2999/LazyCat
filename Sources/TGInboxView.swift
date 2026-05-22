@@ -148,6 +148,7 @@ final class TGInboxView: NSView {
     var onConvertToTask: ((InboxMessage) -> Void)?
     var onBatchConvert: (([InboxMessage]) -> Void)?
     var onOpenSettings: (() -> Void)?
+    var onCollapse: (() -> Void)?
 
     enum Tab: Int { case all = 0, dm = 1, group = 2, alert = 3 }
 
@@ -260,6 +261,23 @@ final class TGInboxView: NSView {
                                 borderWidth: 1)
         selectBtn.onClick = { [weak self] in self?.actToggleBatch() }
         header.addSubview(selectBtn)
+
+        // 折叠按钮（‹ 收起 TG 面板）
+        let collapseBtn = NSButton(title: "‹", target: self, action: #selector(actCollapse))
+        collapseBtn.bezelStyle = .regularSquare
+        collapseBtn.isBordered = false
+        collapseBtn.focusRingType = .none
+        collapseBtn.font = .systemFont(ofSize: 16, weight: .medium)
+        collapseBtn.contentTintColor = LazyCatTheme.tx3
+        collapseBtn.translatesAutoresizingMaskIntoConstraints = false
+        collapseBtn.toolTip = "收起 TG 面板"
+        header.addSubview(collapseBtn)
+        NSLayoutConstraint.activate([
+            collapseBtn.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 6),
+            collapseBtn.centerYAnchor.constraint(equalTo: header.centerYAnchor),
+            collapseBtn.widthAnchor.constraint(equalToConstant: 24),
+            collapseBtn.heightAnchor.constraint(equalToConstant: 24),
+        ])
 
         // 全部已读
         styleSmallTextBtn(clearAllBtn, title: "全部已读", color: tg,
@@ -423,7 +441,7 @@ final class TGInboxView: NSView {
             header.trailingAnchor.constraint(equalTo: trailingAnchor),
             header.heightAnchor.constraint(equalToConstant: 44),
 
-            titleIcon.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 12),
+            titleIcon.leadingAnchor.constraint(equalTo: header.leadingAnchor, constant: 36),
             titleIcon.centerYAnchor.constraint(equalTo: header.centerYAnchor),
             titleIcon.widthAnchor.constraint(equalToConstant: 24),
             titleIcon.heightAnchor.constraint(equalToConstant: 24),
@@ -826,6 +844,9 @@ final class TGInboxView: NSView {
 
     // MARK: - actions
 
+    @objc private func actCollapse() {
+        onCollapse?()
+    }
     @objc private func actMarkAllRead() {
         TelegramTDLib.shared.markAllRead()
     }
