@@ -29,6 +29,13 @@ final class ContentViewController: NSViewController {
     private let listStack = FlippedStack()
     private var listDocHeight: NSLayoutConstraint!
 
+    // TG 折叠
+    private var tgWidthConstraint: NSLayoutConstraint!
+    private var div3WidthConstraint: NSLayoutConstraint!
+    private var tgExpanded: Bool = true
+    static let tgExpandedKey = "tgPanelExpanded"
+    private let tgExpandBtn = NSButton(title: "›", target: nil, action: nil) // TG 收起时右侧展开按钮
+
     // 数据 / 状态
     private var dataObserver: NSObjectProtocol?
     private var typingObserver: NSObjectProtocol?
@@ -68,6 +75,31 @@ final class ContentViewController: NSViewController {
         tgInbox.onOpenSettings = { [weak self] in
             self?.openTGSettings()
         }
+        tgInbox.onCollapse = { [weak self] in
+            self?.toggleTGPanel()
+        }
+
+        // TG 展开按钮（TG 收起时显示在右边缘）
+        tgExpandBtn.bezelStyle = .regularSquare
+        tgExpandBtn.isBordered = false
+        tgExpandBtn.focusRingType = .none
+        tgExpandBtn.font = .systemFont(ofSize: 13, weight: .medium)
+        tgExpandBtn.contentTintColor = NSColor.secondaryLabelColor
+        tgExpandBtn.wantsLayer = true
+        tgExpandBtn.layer?.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(0.6).cgColor
+        tgExpandBtn.layer?.cornerRadius = 6
+        tgExpandBtn.toolTip = "展开 TG 面板"
+        tgExpandBtn.translatesAutoresizingMaskIntoConstraints = false
+        tgExpandBtn.isHidden = tgExpanded  // 展开时隐藏
+        tgExpandBtn.target = self
+        tgExpandBtn.action = #selector(expandTGPanel)
+        outer.addSubview(tgExpandBtn)
+        NSLayoutConstraint.activate([
+            tgExpandBtn.trailingAnchor.constraint(equalTo: outer.trailingAnchor, constant: -6),
+            tgExpandBtn.centerYAnchor.constraint(equalTo: outer.centerYAnchor),
+            tgExpandBtn.widthAnchor.constraint(equalToConstant: 22),
+            tgExpandBtn.heightAnchor.constraint(equalToConstant: 44),
+        ])
 
         // mid pane
         midPane.wantsLayer = true
@@ -177,18 +209,29 @@ final class ContentViewController: NSViewController {
             rightPane.trailingAnchor.constraint(equalTo: div3.leadingAnchor),
             rightPane.bottomAnchor.constraint(equalTo: outer.bottomAnchor),
 
-            // div3
+            // div3（width 由 div3WidthConstraint 单独控制，可折叠）
             div3.topAnchor.constraint(equalTo: outer.topAnchor),
             div3.bottomAnchor.constraint(equalTo: outer.bottomAnchor),
             div3.trailingAnchor.constraint(equalTo: tgInbox.leadingAnchor),
-            div3.widthAnchor.constraint(equalToConstant: 0.5),
 
-            // tg inbox（最右第 4 栏，330pt 宽）
+            // tg inbox（最右第 4 栏，330pt 宽，可折叠）
             tgInbox.topAnchor.constraint(equalTo: outer.topAnchor),
             tgInbox.trailingAnchor.constraint(equalTo: outer.trailingAnchor),
             tgInbox.bottomAnchor.constraint(equalTo: outer.bottomAnchor),
-            tgInbox.widthAnchor.constraint(equalToConstant: 330),
         ])
+
+        tgWidthConstraint = tgInbox.widthAnchor.constraint(equalToConstant: 330)
+        div3WidthConstraint = div3.widthAnchor.constraint(equalToConstant: 0.5)
+        tgWidthConstraint.isActive = true
+        div3WidthConstraint.isActive = true
+
+        // 恢复上次折叠状态
+        tgExpanded = UserDefaults.standard.object(forKey: Self.tgExpandedKey) as? Bool ?? true
+        if !tgExpanded {
+            tgWidthConstraint.constant = 0
+            div3WidthConstraint.constant = 0
+            tgInbox.isHidden = true
+        }
 
         // mid pane 内部约束
         NSLayoutConstraint.activate([
@@ -408,6 +451,41 @@ final class ContentViewController: NSViewController {
     private func openMarkdownEditor(forEditing id: UUID) {
         // 简化：复用详情窗口（已有完整编辑能力）
         TaskDetailController.present(taskId: id)
+    }
+
+    // MARK: - TG 折叠
+
+    /// 切换 TG 面板展开 / 收起，带动画
+    func toggleTGPanel() {
+        tgExpanded = !tgExpanded
+        UserDefaults.standard.set(tgExpanded, forKey: Self.tgExpandedKey)
+
+        if tgExpanded {
+            tgInbox.isHidden = false
+            tgExpandBtn.isHidden = true
+        }
+
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.22
+            ctx.allowsImplicitAnimation = true
+            if tgExpanded {
+                tgWidthConstraint.animator().constant = 330
+                div3WidthConstraint.animator().constant = 0.5
+            } else {
+                tgWidthConstraint.animator().constant = 0
+                div3WidthConstraint.animator().constant = 0
+            }
+            self.view.layoutSubtreeIfNeeded()
+        } completionHandler: {
+            if !self.tgExpanded {
+                self.tgInbox.isHidden = true
+                self.tgExpandBtn.isHidden = false
+            }
+        }
+    }
+
+    @objc private func expandTGPanel() {
+        if !tgExpanded { toggleTGPanel() }
     }
 
     private func openTGSettings() {

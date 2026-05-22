@@ -30,9 +30,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         w.contentMaxSize = NSSize(width: 1500, height: 4000)
         // 关键：关闭窗口时不要释放，否则菜单栏再唤起会崩溃（野指针）
         w.isReleasedWhenClosed = false
-        w.center()
-        // ★ 改 autosave 名 V3，作废之前用户可能拉到全屏的尺寸
-        w.setFrameAutosaveName("MyTodoMainWindowV4")
+        // ★ autosave V5：作废之前可能保存的过小尺寸
+        w.setFrameAutosaveName("MyTodoMainWindowV5")
+        // 若没有已存储的帧（首次启动 / autosave 名变更），强制居中于屏幕
+        // 若已有存储帧且宽度合理（≥1100）则保留用户上次位置，仅补足最小尺寸
+        if let screen = NSScreen.main {
+            let saved = w.frame
+            let minW: CGFloat = 1200
+            let minH: CGFloat = 720
+            if saved.width < minW || saved.height < minH {
+                let sf = screen.visibleFrame
+                let newW = max(minW, min(1280, sf.width * 0.85))
+                let newH = max(minH, min(800, sf.height * 0.85))
+                let ox = sf.origin.x + (sf.width - newW) / 2
+                let oy = sf.origin.y + (sf.height - newH) / 2
+                w.setFrame(NSRect(x: ox, y: oy, width: newW, height: newH), display: false)
+            }
+        } else {
+            w.center()
+        }
         self.window = w
 
         w.makeKeyAndOrderFront(nil)
