@@ -65,7 +65,8 @@ final class UpdateChecker {
                 let data = data,
                 let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
                 let remoteVersion  = json["version"],
-                let downloadString = json["download_url"],
+                // 支持 "url" 或 "download_url" 两种字段名
+                let downloadString = json["url"] ?? json["download_url"],
                 let downloadURL    = URL(string: downloadString)
             else {
                 if manual {
@@ -76,7 +77,8 @@ final class UpdateChecker {
                 return
             }
 
-            let notes = json["release_notes"] ?? ""
+            // 支持 "notes" 或 "release_notes" 两种字段名
+            let notes = json["notes"] ?? json["release_notes"] ?? ""
             let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
 
             DispatchQueue.main.async {
