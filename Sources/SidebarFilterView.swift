@@ -93,11 +93,6 @@ final class SidebarFilterView: NSView {
         footerStrip.addSubview(footerTopBorder)
 
         NSLayoutConstraint.activate([
-            vibrancy.topAnchor.constraint(equalTo: topAnchor),
-            vibrancy.leadingAnchor.constraint(equalTo: leadingAnchor),
-            vibrancy.trailingAnchor.constraint(equalTo: trailingAnchor),
-            vibrancy.bottomAnchor.constraint(equalTo: bottomAnchor),
-
             searchField.topAnchor.constraint(equalTo: topAnchor, constant: 8),
             searchField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             searchField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
