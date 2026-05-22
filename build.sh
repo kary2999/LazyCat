@@ -245,6 +245,8 @@ if [ "$DO_DIST" = "1" ]; then
     rm -rf "$DMG_STAGE"
     mkdir -p "$DMG_STAGE"
     cp -R "${BUNDLE}" "${DMG_STAGE}/"
+    # ★ 修正 dylib 只读权限（brew 安装的 dylib 是 444），否则用户 xattr -cr 会 Permission denied
+    chmod -R u+rw "${DMG_STAGE}/"
     # 在 dmg 里加一个指向 /Applications 的符号链接，方便用户拖拽
     ln -s /Applications "${DMG_STAGE}/Applications"
     rm -f "${DMG_OUT}"
